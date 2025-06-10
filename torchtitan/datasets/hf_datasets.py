@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 import torch
+import os
 
 from datasets import Dataset, load_dataset
 from datasets.distributed import split_dataset_by_node
@@ -22,7 +23,8 @@ from torchtitan.tools.logging import logger
 
 def _load_c4_dataset(dataset_path: str):
     """Load C4 dataset with default configuration."""
-    return load_dataset(dataset_path, name="en", split="train", streaming=True)
+    print("returned c4 dataset loader")
+    return load_dataset(dataset_path, name="en", split="train", streaming=True, cache_dir="/pscratch/sd/c/co232/hf_cache/datasets")
 
 
 def _process_c4_text(sample: dict[str, Any]) -> str:
@@ -46,7 +48,7 @@ DATASETS = {
     ),
     "c4_test": DatasetConfig(
         path="tests/assets/c4_test",
-        loader=lambda path: load_dataset(path, split="train"),
+        loader=lambda path: load_dataset(path, split="train", cache_dir="/pscratch/sd/c/co232/hf_cache/datasets"),
         text_processor=_process_c4_text,
     ),
 }
@@ -85,7 +87,9 @@ class HuggingFaceDataset(IterableDataset, Stateful):
         path, dataset_loader, text_processor = _validate_dataset(
             dataset_name, dataset_path
         )
+        print("Finished validate dataset")
         ds = dataset_loader(path)
+        print("Finished dataset loader")
 
         self.dataset_name = dataset_name
         self._data = split_dataset_by_node(ds, dp_rank, dp_world_size)
