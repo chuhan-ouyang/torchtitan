@@ -17,7 +17,10 @@ export LOG_RANK
 CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/llama3/train_configs/llama3_8b.toml"}
 # CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/llama3/train_configs/debug_model.toml"}
 
+export HF_TOKEN="..."
 export HF_HOME=/pscratch/sd/c/co232/hf_cache
+
+export TORCHTITAN_LOGDIR=/pscratch/sd/c/co232/my_tb_logs_8b_test
 
 overrides=""
 if [ $# -ne 0 ]; then
@@ -57,6 +60,7 @@ torchrun \
   --rdzv_endpoint=${head_node_ip}:29500 \
   --role rank \
   --local-ranks-filter ${LOG_RANK} \
+  --log-dir /pscratch/sd/c/co232/my_tb_logs_8b_test/torchrun_logs \
   --tee 3 \
   -m torchtitan.train \
     --job.config_file ${CONFIG_FILE} \

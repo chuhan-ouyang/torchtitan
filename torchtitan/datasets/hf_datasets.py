@@ -20,11 +20,24 @@ from torchtitan.components.tokenizer import Tokenizer
 from torchtitan.config_manager import JobConfig
 from torchtitan.tools.logging import logger
 
+from datasets import load_from_disk, config
 
 def _load_c4_dataset(dataset_path: str):
     """Load C4 dataset with default configuration."""
-    print("returned c4 dataset loader")
-    return load_dataset(dataset_path, name="en", split="train", streaming=True, cache_dir="/pscratch/sd/c/co232/hf_cache/datasets")
+    # Force datasets library into offline mode:
+    print("offline c4 dataset loader")
+    config.HF_DATASETS_OFFLINE = True
+    ds = load_dataset(
+        "allenai/c4",                                # dataset ID
+        name="en",                                   # config name
+        split="train",                               # only the train split
+        cache_dir="/pscratch/sd/c/co232/hf_cache/allenai___c4",
+        streaming=True,                             # map-style access
+        download_mode="reuse_cache_if_exists"        # reuse what's already there
+    )
+    return ds
+    # print("returned c4 dataset loader")
+    # return load_dataset(dataset_path, name="en", split="train", streaming=True, cache_dir="/pscratch/sd/c/co232/hf_cache/datasets")
 
 
 def _process_c4_text(sample: dict[str, Any]) -> str:
@@ -41,8 +54,13 @@ class DatasetConfig:
 
 # Add your dataset here here - more information at docs/datasets.md
 DATASETS = {
+    # "c4": DatasetConfig(
+    #     path="allenai/c4",
+    #     loader=_load_c4_dataset,
+    #     text_processor=_process_c4_text,
+    # ),
     "c4": DatasetConfig(
-        path="allenai/c4",
+        path="/pscratch/sd/c/co232/hf_cache/allenai___c4",
         loader=_load_c4_dataset,
         text_processor=_process_c4_text,
     ),

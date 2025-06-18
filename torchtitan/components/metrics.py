@@ -256,10 +256,22 @@ def _build_metric_logger(
         return BaseLogger()
 
     # Setup logging directory
-    dump_dir = job_config.job.dump_folder
-    base_log_dir = os.path.join(
-        dump_dir, metrics_config.save_tb_folder, datetime.now().strftime("%Y%m%d-%H%M")
-    )
+    # dump_dir = job_config.job.dump_folder
+    # base_log_dir = os.path.join(
+    #     dump_dir, metrics_config.save_tb_folder, datetime.now().strftime("%Y%m%d-%H%M")
+    # )
+
+    # Allow overriding all log dirs with an env var:
+    override_logdir = os.environ.get("TORCHTITAN_LOGDIR")
+    if override_logdir:
+        # Use exactly this path (no timestamp subfolders unless you include them)
+        base_log_dir = override_logdir
+    else:
+        # Fallback to the old behavior
+        dump_dir = job_config.job.dump_folder
+        base_log_dir = os.path.join(
+            dump_dir, metrics_config.save_tb_folder, datetime.now().strftime("%Y%m%d-%H%M")
+        )
 
     if metrics_config.save_for_all_ranks:
         base_log_dir = os.path.join(
