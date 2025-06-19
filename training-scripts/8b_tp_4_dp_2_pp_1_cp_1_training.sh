@@ -14,13 +14,12 @@ case "$SLURM_NODEID" in
 esac
 export LOG_RANK
 
-CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/llama3/train_configs/llama3_8b.toml"}
+CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/llama3/train_configs/llama3_8b_tp_4_dp_2_pp_1_cp_1.toml"}
 # CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/llama3/train_configs/debug_model.toml"}
 
-export HF_TOKEN="..."
 export HF_HOME=/pscratch/sd/c/co232/hf_cache
 
-export TORCHTITAN_LOGDIR=/pscratch/sd/c/co232/my_tb_logs_8b_test
+export TORCHTITAN_LOGDIR=/pscratch/sd/c/co232/my_tb_logs_8b_tp_4_dp_2_pp_1_cp_1
 
 overrides=""
 if [ $# -ne 0 ]; then
@@ -42,7 +41,7 @@ export NCCL_BUFFSIZE=1048576
 export NCCL_P2P_DISABLE=1
 export NCCL_IB_DISABLE=1
 
-num_nodes=4
+num_nodes=2
 
 srun \
   --nodes=$num_nodes \
@@ -60,7 +59,6 @@ torchrun \
   --rdzv_endpoint=${head_node_ip}:29500 \
   --role rank \
   --local-ranks-filter ${LOG_RANK} \
-  --log-dir /pscratch/sd/c/co232/my_tb_logs_8b_test/torchrun_logs \
   --tee 3 \
   -m torchtitan.train \
     --job.config_file ${CONFIG_FILE} \

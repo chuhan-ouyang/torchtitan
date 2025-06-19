@@ -35,7 +35,10 @@ def maybe_enable_profiling(config: JobConfig, *, global_step: int = 0):
         rank = torch.distributed.get_rank()
 
         def trace_handler(prof):
-            curr_trace_dir_name = "iteration_" + str(prof.step_num)
+            step_start = prof.step_num - active + 1
+            step_end = prof.step_num
+            curr_trace_dir_name = f"iteration_{step_start}_to_{step_end}"
+            # curr_trace_dir_name = "iteration_" + str(prof.step_num)
             curr_trace_dir = os.path.join(trace_dir, curr_trace_dir_name)
             if not os.path.exists(curr_trace_dir):
                 os.makedirs(curr_trace_dir, exist_ok=True)
@@ -51,12 +54,21 @@ def maybe_enable_profiling(config: JobConfig, *, global_step: int = 0):
 
         if not os.path.exists(trace_dir):
             os.makedirs(trace_dir, exist_ok=True)
-
-        warmup, active = WARMUP, 1
+        
+        # num iterations per profile trace
+        WINDOW = getattr(config.profiling, "profile_window", 5) 
+        warmup, active = WARMUP, WINDOW
         wait = profile_freq - (active + warmup)
         assert (
             wait >= 0
-        ), "profile_freq must be greater than or equal to warmup + active"
+        ), "profile_freq must be greater than or equal to profiling window"
+
+        # warmup, active = WARMUP, 1
+        # wait = profile_freq - (active + warmup)
+        # assert (
+        #     wait >= 0
+        # ), "profile_freq must be greater than or equal to warmup + active"
+       
         gpu_device_profiled = None
         if torch.cuda.is_available():
             gpu_device_profiled = torch.profiler.ProfilerActivity.CUDA
