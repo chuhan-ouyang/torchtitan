@@ -56,7 +56,7 @@ def maybe_enable_profiling(config: JobConfig, *, global_step: int = 0):
             os.makedirs(trace_dir, exist_ok=True)
         
         # num iterations per profile trace
-        WINDOW = getattr(config.profiling, "profile_window", 5) 
+        WINDOW = getattr(config.profiling, "profile_window", 10) 
         warmup, active = WARMUP, WINDOW
         wait = profile_freq - (active + warmup)
         assert (

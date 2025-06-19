@@ -51,13 +51,6 @@ srun \
   --cpus-per-task=16 \
   --partition=gpu \
   --time=04:00:00 \
-nsys profile \
-  --trace=cuda,nvtx,osrt \
-  --sample=none \
-  --force-overwrite true \
-  --capture-range=cudaProfilerApi \
-  --capture-range-end=stop \
-  --output "/pscratch/sd/c/co232/nsys_traces/trace_rank_${SLURM_PROCID}" \
 torchrun \
   --nnodes=$num_nodes \
   --nproc_per_node=4 \
