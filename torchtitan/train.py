@@ -32,6 +32,8 @@ from torchtitan.tools.profiling import (
     maybe_enable_profiling,
 )
 
+from ctypes import CDLL
+
 
 class Trainer(torch.distributed.checkpoint.stateful.Stateful):
     job_config: JobConfig
@@ -74,6 +76,13 @@ class Trainer(torch.distributed.checkpoint.stateful.Stateful):
 
         if job_config.job.print_args:
             logger.info(f"Running with args: {job_config.to_dict()}")
+
+        # nsys setup
+        libcudart = CDLL("libcudart.so")
+        self.start_profiler = libcudart.cudaProfilerStart
+        self.stop_profiler = libcudart.cudaProfilerStop
+        self.profile_freq = job_config.profiling.profile_freq
+        self.profile_window = getattr(job_config.profiling, "profile_window", 5)
 
         device_module, device_type = utils.device_module, utils.device_type
         self.device = torch.device(f"{device_type}:{int(os.environ['LOCAL_RANK'])}")
@@ -487,6 +496,9 @@ class Trainer(torch.distributed.checkpoint.stateful.Stateful):
             data_iterator = self.batch_generator(self.dataloader)
             while self.step < job_config.training.steps:
                 self.step += 1
+                if self.step % self.profile_freq == 0:
+                    self.start_profiler()
+
                 self.gc_handler.run(self.step)
                 try:
                     self.train_step(data_iterator)
@@ -502,6 +514,9 @@ class Trainer(torch.distributed.checkpoint.stateful.Stateful):
                     torch_profiler.step()
                 if memory_profiler:
                     memory_profiler.step()
+                
+                if self.step % self.profile_freq == self.profile_window:
+                    self.stop_profiler()
 
                 # reduce timeout after first train step for faster signal
                 # (assuming lazy init and compilation are finished)

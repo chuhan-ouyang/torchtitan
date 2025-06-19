@@ -8,7 +8,8 @@ description = "Llama 3 8B training"
 [profiling]
 enable_profiling = true
 save_traces_folder = "/pscratch/sd/c/co232/profile_trace_8b_422_new"
-profile_freq = 100
+profile_freq = 20
+profile_window = 5
 
 [metrics]
 log_freq = 10
@@ -40,12 +41,6 @@ dataset = "c4"
 dataset_cache_dir = "/pscratch/sd/c/co232/hf_cache"
 dataset_streaming = false
 # microbatch >= pipeline stages
-
-# TODO: tensor 4 dp2 tp 1
-# tensor 4 dp 1 tp 2
-# multiple iterations save trace  (10 iterations per trace)
-# use shard degree 
-# use nvidia profiler 
 
 [parallelism]
 data_parallel_replicate_degree = 2
