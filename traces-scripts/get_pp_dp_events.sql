@@ -23,7 +23,7 @@ kernels_in_step AS (
     AND s.category = 'kernel'
 ),
 
--- Filter kernels either with mesh_pp group OR SendRecv prefix
+-- Filter kernels matching mesh_pp, mesh_dp_shard, or SendRecv prefix
 filtered_kernels AS (
   SELECT *
   FROM kernels_in_step
@@ -32,7 +32,7 @@ filtered_kernels AS (
         SELECT arg_set_id
         FROM args
         WHERE key = 'args.Process Group Description'
-          AND display_value = 'mesh_pp'
+          AND display_value IN ('mesh_pp', 'mesh_dp_shard')
      )
 ),
 
@@ -51,10 +51,15 @@ arg_summary AS (
 -- Final output
 SELECT
   'ProfilerStep#17' AS step_name,
-  k.kernel_name,
+  CASE
+    WHEN k.kernel_name GLOB 'ncclDevKernel_SendRecv*' OR a.group_desc = 'mesh_pp' THEN 'PP'
+    WHEN a.group_desc = 'mesh_dp_shard' THEN 'DP'
+    ELSE NULL
+  END AS parallelism_type,
   k.ts AS start_ts,
   k.ts + k.dur AS end_ts,
   k.dur AS duration_ns,
+  k.kernel_name,
   a.collective_name,
   a.in_msg_nelems,
   a.group_desc,
