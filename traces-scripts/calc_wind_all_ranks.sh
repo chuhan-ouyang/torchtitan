@@ -1,1 +1,1 @@
-python3 calc_reconfig_wind.py trace-events/rank0_dp_2_tp_4_pp_2_events_processed.tsv
+python3 calc_reconfig_wind.py trace-events/rank8_dp_2_tp_4_pp_2_events_processed.tsv
