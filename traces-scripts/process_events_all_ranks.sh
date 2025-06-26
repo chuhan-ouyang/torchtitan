@@ -1,1 +1,1 @@
-python3 process_events.py trace-events/rank0_dp_2_tp_4_pp_2_events.csv
+python3 process_events.py trace-events/rank0_dp_2_tp_4_pp_2_events.tsv

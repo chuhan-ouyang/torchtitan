@@ -1,9 +1,9 @@
 Traces Processing Pipeline:
 
-Perfetto SQL Engine: run get_pp_dp_events.sql for each rank and copy result to csv
+Perfetto SQL Engine: run get_pp_dp_events.sql for each rank and copy result to tsv
 
-process_events.py: write to **_processed.csv
-    calculate size
+process_events.py: write to **_processed.tsv
+    calculate size in bytes for all kernels based on dtype
 
-calculate_reconfig_window.py: write to rank_X_window.csv
-    calculate window
+calc_reconfig_wind.py : write to **_window.tsv
+    calculate window across all iterations

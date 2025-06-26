@@ -1,32 +1,33 @@
--- Get time range of ProfilerStep#17
+-- Get time ranges for ProfilerStep#10 to #19
 WITH step_bounds AS (
   SELECT
     ts AS start_ts,
     ts + dur AS end_ts,
-    name AS step_name
+    CAST(REPLACE(name, 'ProfilerStep#', '') AS INT) AS iteration
   FROM slice
   WHERE category = 'gpu_user_annotation'
-    AND name = 'ProfilerStep#17'
-  LIMIT 1
+    AND name GLOB 'ProfilerStep#1[0-9]'
 ),
 
--- Get all kernel slices within that time range
-kernels_in_step AS (
+-- Get all kernel slices within each step's time range
+kernels_in_steps AS (
   SELECT
     s.id,
     s.name AS kernel_name,
     s.ts,
     s.dur,
-    s.arg_set_id
-  FROM slice s, step_bounds sb
-  WHERE s.ts BETWEEN sb.start_ts AND sb.end_ts
-    AND s.category = 'kernel'
+    s.arg_set_id,
+    sb.iteration
+  FROM slice s
+  JOIN step_bounds sb
+    ON s.ts BETWEEN sb.start_ts AND sb.end_ts
+  WHERE s.category = 'kernel'
 ),
 
 -- Filter kernels matching mesh_pp, mesh_dp_shard, or SendRecv prefix
 filtered_kernels AS (
   SELECT *
-  FROM kernels_in_step
+  FROM kernels_in_steps
   WHERE kernel_name GLOB 'ncclDevKernel_SendRecv*'
      OR arg_set_id IN (
         SELECT arg_set_id
@@ -43,14 +44,15 @@ arg_summary AS (
     MAX(CASE WHEN key = 'args.Collective name' THEN display_value END) AS collective_name,
     MAX(CASE WHEN key = 'args.In msg nelems' THEN display_value END) AS in_msg_nelems,
     MAX(CASE WHEN key = 'args.Process Group Description' THEN display_value END) AS group_desc,
-    MAX(CASE WHEN key = 'args.Process Group Ranks' THEN display_value END) AS group_ranks
+    MAX(CASE WHEN key = 'args.Process Group Ranks' THEN display_value END) AS group_ranks,
+    MAX(CASE WHEN key = 'args.dtype' THEN display_value END) AS dtype
   FROM args
   GROUP BY arg_set_id
 )
 
 -- Final output
 SELECT
-  'ProfilerStep#17' AS step_name,
+  k.iteration,
   CASE
     WHEN k.kernel_name GLOB 'ncclDevKernel_SendRecv*' OR a.group_desc = 'mesh_pp' THEN 'PP'
     WHEN a.group_desc = 'mesh_dp_shard' THEN 'DP'
@@ -63,7 +65,9 @@ SELECT
   a.collective_name,
   a.in_msg_nelems,
   a.group_desc,
-  a.group_ranks
+  a.group_ranks,
+  a.dtype
 FROM filtered_kernels k
 LEFT JOIN arg_summary a ON k.arg_set_id = a.arg_set_id
-ORDER BY k.ts;
+ORDER BY k.iteration, k.ts;
+str
