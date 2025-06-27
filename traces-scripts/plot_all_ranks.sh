@@ -1,1 +1,2 @@
-python3 plot_cdf.py trace-events/rank8_dp_2_tp_4_pp_2_events_processed_window.tsv
+python3 merge_ranks.py trace-events
+python3 plot_cdf.py trace-events/all_ranks_dp_2_tp_4_pp_2_events_processed_window.tsv

@@ -11,6 +11,9 @@ calc_reconfig_wind.py :
     write to **_window.tsv
     calculate window across all iterations
 
+merge_ranks.py:
+    combine all ranks into a tsv
+
 plot_cdf.py:
     cfreate **_plot.png
-    plot cdf of window size
+    plot cdf of window size, a curve for eac rank
