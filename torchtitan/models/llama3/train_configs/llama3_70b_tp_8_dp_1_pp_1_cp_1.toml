@@ -3,11 +3,11 @@
 
 [job]
 dump_folder = "./outputs"
-description = "Llama 3 8B training"
+description = "Llama 3 70B training"
 
 [profiling]
 enable_profiling = true
-save_traces_folder = "/pscratch/sd/c/co232/profile_trace_8b_tp_4_dp_1_pp_2_cp_1"
+save_traces_folder = "/pscratch/sd/c/co232/profile_trace_70b_tp_8_dp_1_pp_1_cp_1"
 profile_freq = 20
 profile_window = 10
 # first 20 steps:  wait (7) + warmup (3) + profile window (10)
@@ -20,34 +20,30 @@ save_tb_folder = "tb"
 
 [model]
 name = "llama3"
-flavor = "8B"
+flavor = "70B"
 tokenizer_path = "./assets/tokenizer/original/tokenizer.model"
 # converters = ["float8"]
 
 [optimizer]
 name = "AdamW"
-lr = 3e-4
+lr = 1.5e-4
 eps = 1e-8
 
 [lr_scheduler]
-warmup_steps = 20  # lr scheduler warm up
+warmup_steps = 20  # lr scheduler warm up, normally 20% of the train steps
 
 [training]
-# microbatch >= piepeline degree
-local_batch_size = 2
+local_batch_size = 8
 seq_len = 8192
 max_norm = 1.0  # grad norm clipping
 steps = 40
 compile = false
 dataset = "c4"
-dataset_cache_dir = "/pscratch/sd/c/co232/hf_cache"
-dataset_streaming = false
-# microbatch >= pipeline stages
 
 [parallelism]
 data_parallel_replicate_degree = 1
 data_parallel_shard_degree = 1
-tensor_parallel_degree = 4
+tensor_parallel_degree = 8  # 8-way TP
 pipeline_parallel_degree = 2
 context_parallel_degree = 1
 
@@ -55,13 +51,12 @@ context_parallel_degree = 1
 enable_checkpoint = false
 folder = "checkpoint"
 interval = 500
-last_save_model_weights_only = false
+model_weights_only = false
 export_dtype = "float32"
 async_mode = "disabled" # ["disabled", "async", "async_with_pinned_mem"]
 
 [activation_checkpoint]
-mode = "selective"  # ["none", "selective", "full"]
-selective_ac_option = "op"  # "int" = ac every positive int layer or 'op', ac based on ops policy
+mode = "full"
 
 [float8]
 enable_fsdp_float8_all_gather = false

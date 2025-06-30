@@ -7,7 +7,7 @@ description = "Llama 3 8B training"
 
 [profiling]
 enable_profiling = true
-save_traces_folder = "/pscratch/sd/c/co232/profile_trace_8b_tp_4_dp_1_pp_2_cp_1"
+save_traces_folder = "/pscratch/sd/c/co232/profile_trace_8b_tp_4_dp_2_pp_2_cp_1_test_sz"
 profile_freq = 20
 profile_window = 10
 # first 20 steps:  wait (7) + warmup (3) + profile window (10)
@@ -46,7 +46,7 @@ dataset_streaming = false
 
 [parallelism]
 data_parallel_replicate_degree = 1
-data_parallel_shard_degree = 1
+data_parallel_shard_degree = 2
 tensor_parallel_degree = 4
 pipeline_parallel_degree = 2
 context_parallel_degree = 1
