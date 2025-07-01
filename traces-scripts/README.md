@@ -25,4 +25,10 @@ plot_cdf.py:
 Reconfig Window for All Participating Rank
 ###
 synchronize_start_ts.py:
+    input: _processed.tsv
     for each iteration, use first S/R kernel's end_ts as time=0ns
+    also process data by grouping all consecutive kernels of a parallelism type into one
+
+group_kernel.py:
+    input: _processed_synch.tsv
+    group all DP calls into one
