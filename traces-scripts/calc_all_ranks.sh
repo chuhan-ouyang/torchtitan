@@ -1,0 +1,1 @@
+python3 calc_ocs_circuit.py 0 4 8 12

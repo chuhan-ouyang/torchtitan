@@ -14,12 +14,12 @@ case "$SLURM_NODEID" in
 esac
 export LOG_RANK
 
-CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/llama3/train_configs/llama3_8b_tp_4_dp_2_pp_1_cp_1.toml"}
+CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/llama3/train_configs/llama3_8b_tp_4_dp_1_pp_1_cp_2.toml"}
 # CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/llama3/train_configs/debug_model.toml"}
 
 export HF_HOME=/pscratch/sd/c/co232/hf_cache
 
-export TORCHTITAN_LOGDIR=/pscratch/sd/c/co232/my_tb_logs_8b_tp_4_dp_2_pp_1_cp_1
+export TORCHTITAN_LOGDIR=/pscratch/sd/c/co232/my_tb_logs_8b_tp_4_dp_1_pp_1_cp_2
 
 overrides=""
 if [ $# -ne 0 ]; then
@@ -51,13 +51,6 @@ srun \
   --cpus-per-task=16 \
   --partition=gpu \
   --time=04:00:00 \
-nsys profile \
-  --trace=cuda,nvtx,osrt \
-  --sample=none \
-  --force-overwrite true \
-  --capture-range=cudaProfilerApi \
-  --capture-range-end=stop \
-  --output "/pscratch/sd/c/co232/nsys_traces/trace_rank_${SLURM_PROCID}" \
 torchrun \
   --nnodes=$num_nodes \
   --nproc_per_node=4 \
