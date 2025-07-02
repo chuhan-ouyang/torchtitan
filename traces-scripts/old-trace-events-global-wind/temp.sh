@@ -1,0 +1,16 @@
+cp rank0_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind
+cp rank1_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind
+cp rank2_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind
+cp rank3_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind
+cp rank4_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind
+cp rank5_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind
+cp rank6_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind
+cp rank7_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind
+cp rank8_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind
+cp rank9_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind
+cp rank10_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind
+cp rank11_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind
+cp rank12_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind
+cp rank13_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind
+cp rank14_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind
+cp rank15_dp_2_tp_4_pp_2_events_processed.tsv ../trace-events-global-wind

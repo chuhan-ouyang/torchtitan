@@ -27,7 +27,7 @@ def main():
     for r in ranks:
         path = os.path.join(
             base_dir,
-            f"rank{r}_dp_2_tp_4_pp_2_events_processed_ppsync_dpsync_grouped.tsv"
+            f"rank{r}_dp_2_tp_4_pp_2_events_processed_synch_grouped.tsv"
         )
         if not os.path.isfile(path):
             raise FileNotFoundError(f"File not found: {path}")

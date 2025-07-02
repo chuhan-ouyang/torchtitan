@@ -49,7 +49,7 @@ def main():
 
         # enforce monotonicity vs. last window end
         if wind_start > wind_end:
-            print(f"Overlapping windows: wind_start {wind_start}, last_wndow_end {wind_end}")
+            print(f"Overlapping windows: wind_start {wind_start}, wind_end {wind_end}")
             wind_start = wind_end
 
         wind_dur = wind_end - wind_start
