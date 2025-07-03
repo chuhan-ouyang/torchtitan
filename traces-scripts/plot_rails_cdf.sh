@@ -1,0 +1,2 @@
+#!/bin/bash
+python plot_global_wnd_cdf.py trace-events-global-wind/rank_0_4_8_12_circuit_global_window.tsv trace-events-global-wind/rank_1_5_9_13_circuit_global_window.tsv trace-events-global-wind/rank_2_6_10_14_circuit_global_window.tsv trace-events-global-wind/rank_3_7_11_15_circuit_global_window.tsv

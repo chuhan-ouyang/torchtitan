@@ -1,37 +1,44 @@
 #!/usr/bin/env python3
 import argparse
+import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 
 def main():
-    parser = argparse.ArgumentParser(description="Plot CDF of window durations (ms) from a TSV.")
-    parser.add_argument("tsv_path", help="Path to input TSV file")
+    parser = argparse.ArgumentParser(
+        description="Plot CDF of window durations (ms) from four TSVs on one graph."
+    )
+    parser.add_argument(
+        "tsv_paths",
+        nargs=4,
+        metavar="TSV",
+        help="Paths to 4 input TSV files (rails 1–4), in order."
+    )
     args = parser.parse_args()
 
-    # Load and compute durations in ms
-    df = pd.read_csv(args.tsv_path, sep="\t")
-    df["wind_duration_ms"] = df["wind_duration_ns"] / 1e6
-
-    # Build CDF
-    durations = np.sort(df["wind_duration_ms"].values)
-    cdf = np.arange(1, len(durations) + 1) / len(durations)
-
-    # Plot
     plt.figure(figsize=(8, 5))
-    plt.plot(durations, cdf)
+
+    # Plot each rail's CDF
+    for idx, path in enumerate(args.tsv_paths, start=1):
+        df = pd.read_csv(path, sep="\t")
+        df["wind_duration_ms"] = df["wind_duration_ns"] / 1e6
+        durations = np.sort(df["wind_duration_ms"].values)
+        cdf = np.arange(1, len(durations) + 1) / len(durations)
+        plt.plot(durations, cdf, label=f"rail{idx}")
+
     plt.xlabel("Window Duration (ms)")
     plt.ylabel("CDF")
-    plt.title("CDF of Window Durations")
+    plt.title("CDF of Window Durations for Rails 1–4")
     plt.grid(True)
+    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
     plt.tight_layout()
 
-    # Save under same base name
-    base, _ = os.path.splitext(args.tsv_path)
-    out_png = f"{base}_cdf.png"
-    plt.savefig(out_png)
-    print(f"CDF plot saved to {out_png}")
+    # Save to 'rails_cdf.png' in the same directory as the first TSV
+    out_dir = os.path.dirname(args.tsv_paths[0]) or "."
+    out_path = os.path.join(out_dir, "rails_cdf.png")
+    plt.savefig(out_path)
+    print(f"CDF plot saved to {out_path}")
 
 if __name__ == "__main__":
     main()
