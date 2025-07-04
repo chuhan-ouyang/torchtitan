@@ -12,38 +12,54 @@ def main():
 
     grouped = df.groupby("kernel_after_bytes")["wind_duration_ms"]
     averages = grouped.mean()
-    std_devs = grouped.std()
+    # std_devs = grouped.std()
     counts = grouped.count()
-
-    print("kernel_after_bytes\tCount\tAvg(ms)\tStd(ms)")
+    grouped_ranges = {}
     for k in averages.index:
-        print(f"{int(k)}\t{counts[k]}\t{averages[k]:.2f}\t{std_devs[k]:.2f}")
+        range_key = int(k / 2**20)
+        if range_key not in grouped_ranges:
+            grouped_ranges[range_key] = {"count": 0, "sum_avg": 0}
+        grouped_ranges[range_key]["count"] += counts[k]
+        grouped_ranges[range_key]["sum_avg"] += counts[k] * averages[k]
 
-    labels = [str(int(k)) for k in averages.index]
-    x = range(len(averages))
+    grouped_averages = {k: v["sum_avg"] / v["count"] for k, v in grouped_ranges.items()}
+    grouped_counts = {k: int(v["count"] / 10 + 0.5) for k, v in grouped_ranges.items()}
 
-    fig, ax1 = plt.subplots(figsize=(12, 6))
+    print(grouped_averages)
+    print("kernel_after_bytes\tCount\tAvg(ms)\tStd(ms)")
+    for k in grouped_averages.keys():
+        print(f"{int(k)}\t{grouped_counts[k]}\t{grouped_averages[k]:.2f}")
+
+    labels = [str(int(k)) for k in grouped_averages.keys()]
+    labels[0] = "<1"
+    x = range(len(grouped_averages))
+
+    plt.rcParams.update({'font.size': 14})
+    fig, ax1 = plt.subplots(figsize=(5, 3))
 
     # Left Y-axis: count bar plot
-    ax1.bar(x, counts.values, color='tab:blue', label="Count")
-    ax1.set_xlabel("Kernel After Window Communication Size (Bytes)")
-    ax1.set_ylabel("Count", color='tab:blue')
-    ax1.tick_params(axis='y', labelcolor='tab:blue')
+    ax1.bar(x, grouped_counts.values(), hatch='/', edgecolor='black', color='white', label="Count")
+    ax1.set_xlabel("Traffic size after reconfig. (MB)")
+    ax1.set_ylabel("Number / iter.")
+    ax1.tick_params(axis='y')
     ax1.set_xticks(x)
-    ax1.set_xticklabels(labels, rotation=45)
+    ax1.set_xticklabels(labels)
+    ax1.legend(loc='upper center', bbox_to_anchor=(0.2, 1.22), ncol=2)
 
     # Right Y-axis: average window duration line plot
     ax2 = ax1.twinx()
-    ax2.plot(x, averages.values, color='tab:red', marker='o', label="Avg Duration (ms)")
+    ax2.plot(x, grouped_averages.values(), linestyle='--', marker='o', label="Window size")
     ax2.set_yscale('log')
-    ax2.set_ylabel("Average Window Duration (ms)", color='tab:red')
-    ax2.tick_params(axis='y', labelcolor='tab:red')
+    ax2.set_ylim(0.005, 2000)
+    ax2.set_ylabel("Avg. window size (ms)")
+    ax2.tick_params(axis='y')
+    ax2.legend(loc='upper center', bbox_to_anchor=(0.7, 1.22), ncol=2)
 
-    fig.suptitle("Window Count and Average Duration per Kernel Communication Size")
+    # fig.suptitle("Window Count and Average Duration per Kernel Communication Size")
     fig.tight_layout()
     fig.subplots_adjust(top=0.88)
 
-    output_path = args.tsv_path.replace(".tsv", "_count_duration_plot.png")
+    output_path = args.tsv_path.replace(".tsv", "_count_duration_plot.pdf")
     plt.savefig(output_path)
     print(f"Plot saved to {output_path}")
 
