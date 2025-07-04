@@ -35,6 +35,7 @@ def main():
     # Right Y-axis: average window duration line plot
     ax2 = ax1.twinx()
     ax2.plot(x, averages.values, color='tab:red', marker='o', label="Avg Duration (ms)")
+    ax2.set_yscale('log')
     ax2.set_ylabel("Average Window Duration (ms)", color='tab:red')
     ax2.tick_params(axis='y', labelcolor='tab:red')
 

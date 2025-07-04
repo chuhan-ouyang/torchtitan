@@ -1,64 +1,76 @@
 #!/usr/bin/env python3
 import argparse
-import pandas as pd
 import os
-
-GROUP_NAMES = {
-    "ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)",
-    "ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)"
-}
+import pandas as pd
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Group consecutive AllGather/ReduceScatter kernels into single entries."
+        description="Group consecutive NCCL AllGather/ReduceScatter kernels into single entries"
     )
     parser.add_argument("tsv_path", help="Path to input TSV file")
     args = parser.parse_args()
 
-    df = pd.read_csv(args.tsv_path, sep="\t")
+    input_path = args.tsv_path
+    root, ext = os.path.splitext(input_path)
+    output_path = f"{root}_grouped{ext}"
 
-    to_drop = {"in_msg_nelems", "bytes"}
+    # Read input
+    df = pd.read_csv(input_path, sep="\t")
 
-    out_rows = []
-    i = 0
+    # Define which kernels to group
+    group_targets = {
+        'ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)',
+        'ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)'
+    }
+
+    rows = []
     n = len(df)
+    i = 0
     while i < n:
-        name = df.loc[i, "kernel_name"]
-        if name in GROUP_NAMES:
-            # start a group
-            start_idx = i
-            # extend as long as next rows are in GROUP_NAMES
-            while i + 1 < n and df.loc[i + 1, "kernel_name"] in GROUP_NAMES:
-                i += 1
-            end_idx = i
-            first = df.loc[start_idx]
-            last = df.loc[end_idx]
-
-            # build new row from first, overriding start/end and bytes
-            new = first.drop(labels=to_drop).to_dict()
-            new["start_ts"] = first["start_ts"]
-            new["end_ts"]   = last["end_ts"]
-            new['duration_ns'] = new['end_ts'] - new['start_ts']
-            new["group_first_kernel_bytes"] = int(first["bytes"])
-            new["group_last_kernel_bytes"]  = int(last["bytes"])
-
-            out_rows.append(new)
-            i += 1
+        row = df.iloc[i]
+        name = row['kernel_name']
+        # If this row is one of the group targets, gather consecutive run
+        if name in group_targets:
+            # find end of the group run
+            j = i
+            total_bytes = 0
+            while j < n and df.iloc[j]['kernel_name'] in group_targets:
+                total_bytes += df.iloc[j]['bytes']
+                j += 1
+            # df indices [i, j)
+            first = df.iloc[i]
+            last = df.iloc[j-1]
+            # build new entry
+            entry = first.to_dict()
+            # update timing
+            entry['start_ts'] = first['start_ts']
+            entry['end_ts'] = last['end_ts']
+            entry['duration_ns'] = entry['end_ts'] - entry['start_ts']
+            # set grouped bytes columns
+            entry['group_first_kernel_bytes'] = total_bytes
+            entry['group_last_kernel_bytes'] = total_bytes
+            rows.append(entry)
+            i = j
         else:
-            # not groupable: emit single
-            row = df.loc[i]
-            new = row.drop(labels=to_drop).to_dict()
-            new["group_first_kernel_bytes"] = int(row["bytes"])
-            new["group_last_kernel_bytes"]  = int(row["bytes"])
-            out_rows.append(new)
+            # non-target, pass through
+            entry = row.to_dict()
+            # set grouped bytes to original bytes
+            entry['group_first_kernel_bytes'] = entry['bytes']
+            entry['group_last_kernel_bytes'] = entry['bytes']
+            rows.append(entry)
             i += 1
 
-    out_df = pd.DataFrame(out_rows)
+    # build output DataFrame
+    out_df = pd.DataFrame(rows)
 
-    base, ext = os.path.splitext(args.tsv_path)
-    out_path = f"{base}_grouped{ext}"
-    out_df.to_csv(out_path, sep="\t", index=False)
-    print(f"Wrote grouped kernels to {out_path}")
+    # drop original bytes and in_msg_nelems if present
+    for col in ['bytes', 'in_msg_nelems']:
+        if col in out_df.columns:
+            out_df.drop(columns=[col], inplace=True)
+
+    # write to TSV
+    out_df.to_csv(output_path, sep="\t", index=False)
+    print(f"Grouped data written to {output_path}")
 
 if __name__ == "__main__":
     main()

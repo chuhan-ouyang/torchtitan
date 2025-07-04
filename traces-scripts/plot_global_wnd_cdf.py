@@ -16,6 +16,7 @@ def main():
         help="Paths to 4 input TSV files (rails 1–4), in order."
     )
     args = parser.parse_args()
+    quantile_levels = [0.0, 0.25, 0.5, 0.75, 1.0]
 
     plt.figure(figsize=(8, 5))
 
@@ -27,9 +28,17 @@ def main():
         cdf = np.arange(1, len(durations) + 1) / len(durations)
         plt.plot(durations, cdf, label=f"rail{idx}")
 
-    plt.xlabel("Window Duration (ms)")
+        qs = np.quantile(durations, quantile_levels)
+        print(f"rail{idx} quantiles (ms):")
+        for q_level, q_val in zip(quantile_levels, qs):
+            pct = int(q_level * 100)
+            print(f"  {pct:>3}%: {q_val:.2f}")
+        print()
+
+    plt.xscale("log")
+    plt.xlabel("Reconfiguration Window Duration (ms)")
     plt.ylabel("CDF")
-    plt.title("CDF of Window Durations for Rails 1–4")
+    plt.title("CDF of Reconfiguration Window Durations for Rails 1–4")
     plt.grid(True)
     plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
     plt.tight_layout()

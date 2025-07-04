@@ -1,72 +1,72 @@
 iteration	parallelism_type	start_ts	end_ts	duration_ns	kernel_name	collective_name	group_desc	group_ranks	dtype	group_first_kernel_bytes	group_last_kernel_bytes
-10	DP	6927252790145008	6927254214574679	1424429671	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	131334144	54534144
+10	DP	6927252790145008	6927254214574679	1424429671	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	1003880448	1003880448
 10	PP	6927254265304969	6927254275657662	10352693	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 10	PP	6927255012905902	6927256880179660	1867273758	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 10	PP	6927258097902961	6927261559510348	3461607387	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
-10	DP	6927262848115188	6927265056918986	2208803798	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	525336576	218136576
+10	DP	6927262848115188	6927265056918986	2208803798	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	4015521792	4015521792
 10	DP	6927265067435997	6927265067500284	64287	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_dp_shard	[2, 6]	Float	4	4
 10	PP	6927265068282100	6927265068302260	20160	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_pp	[2, 10]	Float	4	4
-11	DP	6927265101568156	6927266540042858	1438474702	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	131334144	54534144
+11	DP	6927265101568156	6927266540042858	1438474702	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	1003880448	1003880448
 11	PP	6927266585560532	6927266595445838	9885306	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 11	PP	6927267329541851	6927269201413201	1871871350	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 11	PP	6927270417526534	6927274026540399	3609013865	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
-11	DP	6927275378727179	6927277509768702	2131041523	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	525336576	218136576
+11	DP	6927275378727179	6927277509768702	2131041523	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	4015521792	4015521792
 11	DP	6927277520230515	6927277520306802	76287	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_dp_shard	[2, 6]	Float	4	4
 11	PP	6927277521070314	6927277521096458	26144	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_pp	[2, 10]	Float	4	4
-12	DP	6927277557094555	6927278942824963	1385730408	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	131334144	54534144
+12	DP	6927277557094555	6927278942824963	1385730408	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	1003880448	1003880448
 12	PP	6927279041530059	6927279050683533	9153474	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 12	PP	6927279785225193	6927281654411147	1869185954	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 12	PP	6927282868690333	6927286490640971	3621950638	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
-12	DP	6927287833710159	6927289948581560	2114871401	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	525336576	218136576
+12	DP	6927287833710159	6927289948581560	2114871401	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	4015521792	4015521792
 12	DP	6927289959538312	6927289959561991	23679	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_dp_shard	[2, 6]	Float	4	4
 12	PP	6927289960434014	6927289960470206	36192	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_pp	[2, 10]	Float	4	4
-13	DP	6927289998263165	6927291365475469	1367212304	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	131334144	54534144
+13	DP	6927289998263165	6927291365475469	1367212304	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	1003880448	1003880448
 13	PP	6927291477802120	6927291487690210	9888090	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 13	PP	6927292225245711	6927294101914880	1876669169	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 13	PP	6927295316711383	6927298739060524	3422349141	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
-13	DP	6927299980762015	6927302116676194	2135914179	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	525336576	218136576
+13	DP	6927299980762015	6927302116676194	2135914179	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	4015521792	4015521792
 13	DP	6927302126984152	6927302127004344	20192	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_dp_shard	[2, 6]	Float	4	4
 13	PP	6927302127789712	6927302127815632	25920	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_pp	[2, 10]	Float	4	4
-14	DP	6927302167248797	6927303561243040	1393994243	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	131334144	54534144
+14	DP	6927302167248797	6927303561243040	1393994243	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	1003880448	1003880448
 14	PP	6927303652443019	6927303662551013	10107994	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 14	PP	6927304395917331	6927306276037875	1880120544	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 14	PP	6927307489346118	6927311088354362	3599008244	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
-14	DP	6927312319410267	6927314327147247	2007736980	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	525336576	218136576
+14	DP	6927312319410267	6927314327147247	2007736980	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	4015521792	4015521792
 14	DP	6927314338149535	6927314338675066	525531	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_dp_shard	[2, 6]	Float	4	4
 14	PP	6927314434785581	6927314434795180	9599	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_pp	[2, 10]	Float	4	4
-15	DP	6927314450601228	6927315886913627	1436312399	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	131334144	54534144
+15	DP	6927314450601228	6927315886913627	1436312399	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	1003880448	1003880448
 15	PP	6927315954176945	6927315964518344	10341399	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 15	PP	6927316699378797	6927318583978177	1884599380	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 15	PP	6927319799219276	6927323334491419	3535272143	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
-15	DP	6927324560244660	6927326757088910	2196844250	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	525336576	218136576
+15	DP	6927324560244660	6927326757088910	2196844250	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	4015521792	4015521792
 15	DP	6927326767070504	6927326767088904	18400	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_dp_shard	[2, 6]	Float	4	4
 15	PP	6927326767920192	6927326767945664	25472	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_pp	[2, 10]	Float	4	4
-16	DP	6927326808815199	6927328253205299	1444390100	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	131334144	54534144
+16	DP	6927326808815199	6927328253205299	1444390100	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	1003880448	1003880448
 16	PP	6927328299030112	6927328309770290	10740178	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 16	PP	6927329046530334	6927330946583135	1900052801	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 16	PP	6927332161331713	6927335827170864	3665839151	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
-16	DP	6927337185425175	6927339216210478	2030785303	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	525336576	218136576
+16	DP	6927337185425175	6927339216210478	2030785303	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	4015521792	4015521792
 16	DP	6927339226982847	6927339227001695	18848	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_dp_shard	[2, 6]	Float	4	4
 16	PP	6927339335010251	6927339335019979	9728	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_pp	[2, 10]	Float	4	4
-17	DP	6927339350600875	6927340792450247	1441849372	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	131334144	54534144
+17	DP	6927339350600875	6927340792450247	1441849372	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	1003880448	1003880448
 17	PP	6927340886556802	6927340896506972	9950170	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 17	PP	6927341630847248	6927343519936065	1889088817	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 17	PP	6927344734396924	6927348390619239	3656222315	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
-17	DP	6927349763459049	6927351778407114	2014948065	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	525336576	218136576
+17	DP	6927349763459049	6927351778407114	2014948065	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	4015521792	4015521792
 17	DP	6927351788654016	6927351788675232	21216	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_dp_shard	[2, 6]	Float	4	4
 17	PP	6927351839296377	6927351839305945	9568	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_pp	[2, 10]	Float	4	4
-18	DP	6927351854856441	6927353296579256	1441722815	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	131334144	54534144
+18	DP	6927351854856441	6927353296579256	1441722815	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	1003880448	1003880448
 18	PP	6927353368467159	6927353377950934	9483775	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 18	PP	6927354113185410	6927356012256047	1899070637	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 18	PP	6927357228463948	6927360769191417	3540727469	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
-18	DP	6927361995149224	6927364006992707	2011843483	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	525336576	218136576
+18	DP	6927361995149224	6927364006992707	2011843483	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	4015521792	4015521792
 18	DP	6927364018752843	6927364018771274	18431	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_dp_shard	[2, 6]	Float	4	4
 18	PP	6927364070409785	6927364070419481	9696	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_pp	[2, 10]	Float	4	4
-19	DP	6927364085987066	6927365519314940	1433327874	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	131334144	54534144
+19	DP	6927364085987066	6927365519314940	1433327874	ncclDevKernel_AllGather_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_allgather_base	mesh_dp_shard	[2, 6]	BFloat16	1003880448	1003880448
 19	PP	6927365568045481	6927365577666118	9620637	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 19	PP	6927366314984804	6927368230139774	1915154970	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
 19	PP	6927369446646175	6927372955507404	3508861229	ncclDevKernel_SendRecv(ncclDevKernelArgsStorage<4096ul>)					33554432	33554432
-19	DP	6927374180172666	6927376177966894	1997794228	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	525336576	218136576
+19	DP	6927374180172666	6927376177966894	1997794228	ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	_reduce_scatter_base	mesh_dp_shard	[2, 6]	Float	4015521792	4015521792
 19	DP	6927376188860671	6927376188881215	20544	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_dp_shard	[2, 6]	Float	4	4
 19	PP	6927376233608692	6927376233618196	9504	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_pp	[2, 10]	Float	4	4
 19	DP	6927376247948737	6927376247963713	14976	ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevKernelArgsStorage<4096ul>)	allreduce	mesh_dp_shard	[2, 6]	Float	4	4

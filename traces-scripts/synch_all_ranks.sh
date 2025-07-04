@@ -1,5 +1,5 @@
 #!/bin/bash
-# python3 synch_rank4_dp.py trace-events-global-wind/rank0_dp_2_tp_4_pp_2_events_processed.tsv trace-events-global-wind/rank4_dp_2_tp_4_pp_2_events_processed.tsv
+python3 synch_rank4_dp.py trace-events-global-wind/rank0_dp_2_tp_4_pp_2_events_processed_synch.tsv trace-events-global-wind/rank4_dp_2_tp_4_pp_2_events_processed.tsv
 # python3 synch_rank8_pp.py trace-events-global-wind/rank0_dp_2_tp_4_pp_2_events_processed.tsv trace-events-global-wind/rank8_dp_2_tp_4_pp_2_events_processed.tsv
 # python3 synch_rank12_dp_pp.py trace-events-global-wind/rank4_dp_2_tp_4_pp_2_events_processed_synch.tsv trace-events-global-wind/rank8_dp_2_tp_4_pp_2_events_processed_synch.tsv trace-events-global-wind/rank12_dp_2_tp_4_pp_2_events_processed.tsv
 

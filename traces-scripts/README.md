@@ -24,15 +24,28 @@ plot_cdf.py:
 ###
 Reconfig Window for All Participating Rank
 ###
+process_events 
+
 synchronize??.py:
     input: _processed.tsv
-    for each iteration, use first S/R kernel's end_ts as time=0ns
-    also process data by grouping all consecutive kernels of a parallelism type into one
+    synch 4 to 0
+    synch 8 to 0
+    synch 12 to 4 and 8
 
-group_kernel.py:
+group_kernel.py: - for DP also sum all the bytes of the kernel
     input: _processed_synch.tsv
     group all DP calls into one
 
 calc_oc_circuit.py:
     4 groups of 4 ranks
     compute ocs circuit
+
+condense_circuit.py 
+    sum size up for consecutive DP circuits
+    double size for PP circuits with 4 ranks
+
+calc wind
+
+plot cdf
+
+plot bytes to window

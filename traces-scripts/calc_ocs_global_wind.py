@@ -64,7 +64,6 @@ def main():
             "kernel_after_bytes": curr["group_first_kernel_bytes"],
         })
 
-        last_window_end = wind_end
 
     out_df = pd.DataFrame(windows)
     out_df.to_csv(output_path, sep="\t", index=False)
