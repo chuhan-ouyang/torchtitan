@@ -1,3 +1,3 @@
 python3 merge_ranks.py trace-events
-python3 plot_cdf.py trace-events/all_ranks_dp_2_tp_4_pp_2_events_processed_window.tsv
-python3 plot_bytes_to_window.py trace-events/all_ranks_dp_2_tp_4_pp_2_events_processed_window.tsv
+python3 plot_global_wnd_cdf.py trace-events-global-wind/rank_0_4_8_12_circuit_condensed_global_window.tsv trace-events-global-wind/rank_1_5_9_13_circuit_condensed_global_window.tsv trace-events-global-wind/rank_2_6_10_14_circuit_condensed_global_window.tsv trace-events-global-wind/rank_3_7_11_15_circuit_condensed_global_window.tsv
+python3 plot_bytes_to_window.py trace-events-global-wind/rank_0_4_8_12_circuit_condensed_global_window.tsv 

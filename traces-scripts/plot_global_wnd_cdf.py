@@ -18,7 +18,8 @@ def main():
     args = parser.parse_args()
     quantile_levels = [0.0, 0.25, 0.5, 0.75, 1.0]
 
-    plt.figure(figsize=(8, 5))
+    plt.figure(figsize=(5, 3))
+    plt.rcParams.update({'font.size': 14})
 
     # Plot each rail's CDF
     for idx, path in enumerate(args.tsv_paths, start=1):
@@ -36,16 +37,16 @@ def main():
         print()
 
     plt.xscale("log")
-    plt.xlabel("Reconfiguration Window Duration (ms)")
+    plt.xlabel("Window size (ms)")
     plt.ylabel("CDF")
-    plt.title("CDF of Reconfiguration Window Durations for Rails 1–4")
+    # plt.title("CDF of Reconfiguration Window Durations for Rails 1–4")
     plt.grid(True)
-    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+    plt.legend()
     plt.tight_layout()
 
     # Save to 'rails_cdf.png' in the same directory as the first TSV
     out_dir = os.path.dirname(args.tsv_paths[0]) or "."
-    out_path = os.path.join(out_dir, "rails_cdf.png")
+    out_path = os.path.join(out_dir, "rails_cdf.pdf")
     plt.savefig(out_path)
     print(f"CDF plot saved to {out_path}")
 
