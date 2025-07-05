@@ -35,7 +35,7 @@ def main():
     x = range(len(grouped_averages))
 
     plt.rcParams.update({'font.size': 14})
-    fig, ax1 = plt.subplots(figsize=(5, 3))
+    fig, ax1 = plt.subplots(figsize=(4, 3))
 
     # Left Y-axis: count bar plot
     ax1.bar(x, grouped_counts.values(), hatch='/', edgecolor='black', color='white', label="Count")
@@ -44,7 +44,7 @@ def main():
     ax1.tick_params(axis='y')
     ax1.set_xticks(x)
     ax1.set_xticklabels(labels)
-    ax1.legend(loc='upper center', bbox_to_anchor=(0.2, 1.22), ncol=2)
+    ax1.legend(loc='upper center', bbox_to_anchor=(0.1, 1.23), ncol=2)
 
     # Right Y-axis: average window duration line plot
     ax2 = ax1.twinx()
@@ -53,7 +53,7 @@ def main():
     ax2.set_ylim(0.005, 2000)
     ax2.set_ylabel("Avg. window size (ms)")
     ax2.tick_params(axis='y')
-    ax2.legend(loc='upper center', bbox_to_anchor=(0.7, 1.22), ncol=2)
+    ax2.legend(loc='upper center', bbox_to_anchor=(0.8, 1.23), ncol=2)
 
     # fig.suptitle("Window Count and Average Duration per Kernel Communication Size")
     fig.tight_layout()

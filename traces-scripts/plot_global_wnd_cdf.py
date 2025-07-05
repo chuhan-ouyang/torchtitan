@@ -18,7 +18,7 @@ def main():
     args = parser.parse_args()
     quantile_levels = [0.0, 0.25, 0.5, 0.75, 1.0]
 
-    plt.figure(figsize=(5, 3))
+    plt.figure(figsize=(4, 3))
     plt.rcParams.update({'font.size': 14})
 
     # Plot each rail's CDF
