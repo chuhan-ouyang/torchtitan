@@ -5,8 +5,10 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 
 def main():
+    plt.rcParams.update({'font.size': 14})
     parser = argparse.ArgumentParser(
         description="Plot TorchTitan Application Iteration Time vs Network Reconfiguration Delay"
     )
@@ -24,46 +26,56 @@ def main():
     mask = df[df["hide"] == 1].set_index("ocs_reconfig_lat_ms").sort_index()
 
     # Extract mean & std in order
-    base_means   = [base.loc[d, "avg_iteration_time_ms"] for d in delays]
-    base_stds    = [base.loc[d, "std_dev_ms"]          for d in delays]
-    mask_means   = [mask.loc[d, "avg_iteration_time_ms"] for d in delays]
-    mask_stds    = [mask.loc[d, "std_dev_ms"]          for d in delays]
+    base_means   = [base.loc[d, "avg_iteration_time_ms"] / 1000 for d in delays]
+    base_stds    = [base.loc[d, "std_dev_ms"] / 1000         for d in delays]
+    mask_means   = [mask.loc[d, "avg_iteration_time_ms"] / 1000 for d in delays]
+    mask_stds    = [mask.loc[d, "std_dev_ms"]  / 1000       for d in delays]
 
     # X positions
     x = np.arange(len(delays))
     width = 0.35
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(6, 3))
     ax.bar(
         x - width/2,
         base_means,
         width,
         yerr=base_stds,
-        capsize=5,
-        label="Baseline",
+        capsize=3,
+        label="Without provisioning",
     )
     ax.bar(
         x + width/2,
         mask_means,
         width,
         yerr=mask_stds,
-        capsize=5,
-        label="Masked Network Reconfiguration",
+        capsize=3,
+        label="With provisioning",
     )
+    # Calculate base_mean/mask_mean ratios
+    ratios = [base_means[i] / mask_means[i] for i in range(len(delays))]
 
-    ax.set_xlabel("Network Reconfiguration Delay (ms)")
-    ax.set_yscale('log')
-    ax.set_ylabel("Average Iteration Time (ms)")
-    ax.set_title("TorchTitan Application Iteration Time")
+    # Add text annotations on the bars
+    for i, ratio in enumerate(ratios):
+        ax.text(
+            x[i] + width/2 + 0.2, mask_means[i] + mask_stds[i] + 0.4,
+            f"x{ratio:.2f}", ha="center", va="bottom", fontsize=10, color="black", rotation=45
+        )
+
+    ax.set_xlabel("Reconfig. latency (ms)")
+    # ax.set_yscale('log')
+    ax.set_ylim(10, 21)
+    ax.set_ylabel("Avg iter. time (s)")
     ax.set_xticks(x)
-    ax.set_xticklabels([str(d) for d in delays], rotation=45)
+    ax.set_xticklabels([str(d) if d > 0 else "0" for d in delays], rotation=45, fontsize=10)
+    
     ax.legend()
     ax.grid(True, axis="y", linestyle="--", alpha=0.5)
     fig.tight_layout()
 
     # Save next to input CSV
     out_dir = os.path.dirname(args.csv_path) or "."
-    out_path = os.path.join(out_dir, "iteration_time_vs_reconfig_delay.png")
+    out_path = os.path.join(out_dir, "iteration_time_vs_reconfig_delay.pdf")
     fig.savefig(out_path)
     print(f"Plot saved to {out_path}")
 
