@@ -6,15 +6,15 @@ dump_folder = "./outputs"
 description = "Llama 3 8B training"
 
 [profiling]
-enable_profiling = false
-save_traces_folder = "/pscratch/sd/c/co232/profile_trace_8b_tp_4_dp_2_pp_1_cp_2_replicate"
-profile_freq = 0
-profile_window = 0
+enable_profiling = true
+save_traces_folder = "/pscratch/sd/c/co232/profile_trace_8b_tp_4_dp_2_replicate_pp_1_cp_2"
+profile_freq = 20
+profile_window = 10
 # first 20 steps:  wait (7) + warmup (3) + profile window (10)
 # second 20 steps: wait (7) + warmup (3) + profile window (10)
 
 [metrics]
-log_freq = 1
+log_freq = 10
 enable_tensorboard = true
 save_tb_folder = "tb"
 
@@ -37,7 +37,7 @@ warmup_steps = 0  # lr scheduler warm up
 local_batch_size = 4
 seq_len = 8192
 max_norm = 1.0  # grad norm clipping
-steps = 1
+steps = 20
 compile = false
 dataset = "c4"
 dataset_cache_dir = "/pscratch/sd/c/co232/hf_cache"
@@ -60,7 +60,7 @@ export_dtype = "float32"
 async_mode = "disabled" # ["disabled", "async", "async_with_pinned_mem"]
 
 [activation_checkpoint]
-mode = "selective"  # ["none", "selective", "full"]
+mode = "full"  # ["none", "selective", "full"]
 selective_ac_option = "op"  # "int" = ac every positive int layer or 'op', ac based on ops policy
 
 [float8]

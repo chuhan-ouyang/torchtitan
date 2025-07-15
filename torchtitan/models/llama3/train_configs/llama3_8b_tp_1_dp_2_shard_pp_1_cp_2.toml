@@ -6,15 +6,15 @@ dump_folder = "./outputs"
 description = "Llama 3 8B training"
 
 [profiling]
-enable_profiling = false
-save_traces_folder = "/pscratch/sd/c/co232/profile_trace_8b_tp_4_dp_2_pp_1_cp_2_replicate"
-profile_freq = 0
-profile_window = 0
+enable_profiling = true
+save_traces_folder = "/pscratch/sd/c/co232/profile_trace_8b_tp_1_dp_2_shard_pp_1_cp_2"
+profile_freq = 20
+profile_window = 10
 # first 20 steps:  wait (7) + warmup (3) + profile window (10)
 # second 20 steps: wait (7) + warmup (3) + profile window (10)
 
 [metrics]
-log_freq = 1
+log_freq = 10
 enable_tensorboard = true
 save_tb_folder = "tb"
 
@@ -34,10 +34,10 @@ warmup_steps = 0  # lr scheduler warm up
 
 [training]
 # microbatch >= piepeline degree
-local_batch_size = 4
+local_batch_size = 1
 seq_len = 8192
 max_norm = 1.0  # grad norm clipping
-steps = 1
+steps = 20
 compile = false
 dataset = "c4"
 dataset_cache_dir = "/pscratch/sd/c/co232/hf_cache"
@@ -45,9 +45,9 @@ dataset_streaming = false
 # microbatch >= pipeline stages
 
 [parallelism]
-data_parallel_replicate_degree = 2
-data_parallel_shard_degree = 1
-tensor_parallel_degree = 4
+data_parallel_replicate_degree = 1
+data_parallel_shard_degree = 2
+tensor_parallel_degree = 1
 pipeline_parallel_degree = 1
 context_parallel_degree = 2
 

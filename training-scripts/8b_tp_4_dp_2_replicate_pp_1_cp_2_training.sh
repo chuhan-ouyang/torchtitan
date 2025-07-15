@@ -21,10 +21,10 @@ case "$SLURM_NODEID" in
 esac
 export LOG_RANK
 
-CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/llama3/train_configs/llama3_8b_tp_4_dp_2_pp_1_cp_2.toml"}
+CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/llama3/train_configs/llama3_8b_tp_4_dp_2_replicate_pp_1_cp_2.toml"}
 # CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/llama3/train_configs/debug_model.toml"}
 export HF_HOME=/pscratch/sd/c/co232/hf_cache
-export TORCHTITAN_LOGDIR=/pscratch/sd/c/co232/my_tb_logs_8b_tp_4_dp_2_pp_1_cp_2_rep
+export TORCHTITAN_LOGDIR=/pscratch/sd/c/co232/my_tb_logs_8b_tp_4_dp_2_replicate_pp_1_cp_2
 
 overrides=""
 if [ $# -ne 0 ]; then
