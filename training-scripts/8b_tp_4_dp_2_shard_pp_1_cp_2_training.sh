@@ -79,27 +79,26 @@ TORCHRUN_CMD="torchrun \
     --job.config_file ${CONFIG_FILE} \
     ${overrides}"
 
-srun $SLURM_ARGS nsys profile --stats=true --force-overwrite=true -t nvtx,cuda --output=/pscratch/sd/c/co232/titan/torchtitan/nsys-res/tp_4_dp_2_shard_pp_1_cp_2_1itr_nccl2.27_log.${SLURM_PROCID}.${SLURM_JOBID} $TORCHRUN_CMD
-# if $PROFILE; then
-#   echo "🔍 Profiling only rank 0 under Nsight Systems…"
-#   # Kick off all ranks under one srun, but wrap in a bash -lc so
-#   # each task can inspect $SLURM_PROCID:
-#   srun $SLURM_ARGS bash -lc '
-#     if [[ $SLURM_PROCID -eq 0 ]]; then
-#       CMD="nsys profile \
-#         --stats=true \
-#         --force-overwrite=true \
-#         -t nvtx,cuda \
-#         --output=/pscratch/sd/c/co232/titan/torchtitan/nsys-res/tp_4_dp_2_shard_pp_1_cp_2_1itr_nccl2.27_log.${SLURM_PROCID}.${SLURM_JOBID} \
-#         '"$TORCHRUN_CMD"'" 
-#       echo \"[Rank \$SLURM_PROCID] RUNNING: \$CMD\"
-#       eval \$CMD
-#     else
-#       CMD="'"$TORCHRUN_CMD"'" 
-#       echo \"[Rank \$SLURM_PROCID] RUNNING: \$CMD\"
-#       eval \$CMD
-#     fi
-#   '
-# else
-#   srun $SLURM_ARGS $TORCHRUN_CMD
-# fi
+# srun $SLURM_ARGS $NSYS_PATH/bin/nsys profile --stats=true --force-overwrite=true -t nvtx,cuda --output=/pscratch/sd/c/co232/titan/torchtitan/nsys-res/tp_4_dp_2_shard_pp_1_cp_2_1itr_nccl2.27_nsys2025.${SLURM_PROCID}.${SLURM_JOBID} $TORCHRUN_CMD
+
+if $PROFILE; then
+  echo "🔍 Profiling only Node 0 under Nsight Systems…"
+  # Kick off all ranks under one srun, but wrap in a bash -lc so
+  # each task can inspect $SLURM_PROCID:
+  srun $SLURM_ARGS bash -lc '
+    if [[ $SLURM_PROCID -eq 0 ]]; then
+      CMD="/global/homes/c/co232/nsight-systems-2025.3.1/bin/nsys profile \
+        --stats=true \
+        --force-overwrite=true \
+        -t nvtx,cuda \
+        --output=/pscratch/sd/c/co232/titan/torchtitan/nsys-res/tp_4_dp_2_shard_pp_1_cp_2_1itr_nccl2.27_nsys2025-3.${SLURM_PROCID}.${SLURM_JOBID} \
+        '"$TORCHRUN_CMD"'" 
+      eval \$CMD
+    else
+      CMD="'"$TORCHRUN_CMD"'" 
+      eval \$CMD
+    fi
+  '
+else
+  srun $SLURM_ARGS $TORCHRUN_CMD
+fi
