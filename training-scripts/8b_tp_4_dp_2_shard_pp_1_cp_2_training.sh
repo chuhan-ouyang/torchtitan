@@ -41,16 +41,16 @@ head_node=${nodes[0]}
 head_node_ip=$( srun --nodes=1 --ntasks=1 -w "$head_node" hostname --ip-address )
 
 # Custom NCCL path for NCCL 2.27 build
-export NCCL_HOME=/global/u2/c/co232/ReCCL-workspace/nccl/build
-export LD_LIBRARY_PATH="$NCCL_HOME/lib:$(echo "$LD_LIBRARY_PATH" | tr ':' '\n' | grep -v 'nccl' | paste -sd: -)"
-export LD_PRELOAD=$NCCL_HOME/lib/libnccl.so.2.27.6
-
-export LIBRARY_PATH="$NCCL_HOME/lib:$LIBRARY_PATH"
-export CPATH="$NCCL_HOME/include:$CPATH"
+# export NCCL_HOME=/global/u2/c/co232/ReCCL-workspace/nccl/build
+# export LD_LIBRARY_PATH="$NCCL_HOME/lib:$(echo "$LD_LIBRARY_PATH" | tr ':' '\n' | grep -v 'nccl' | paste -sd: -)"
+# export LD_PRELOAD=$NCCL_HOME/lib/libnccl.so.2.27.6
+# export LIBRARY_PATH="$NCCL_HOME/lib:$LIBRARY_PATH"
+# export CPATH="$NCCL_HOME/include:$CPATH"
 
 # Memory & NCCL Configs
 export NCCL_DEBUG=INFO
-export NCCL_DEBUG_SUBSYS=INIT,ENV,COLL
+# export NCCL_DEBUG_SUBSYS=INIT,ENV,COLL
+export NCCL_DEBUG_SUBSYS=INIT
 
 export NCCL_BUFFSIZE=1048576
 export NCCL_P2P_DISABLE=1
@@ -79,7 +79,7 @@ TORCHRUN_CMD="torchrun \
     --job.config_file ${CONFIG_FILE} \
     ${overrides}"
 
-# srun $SLURM_ARGS $NSYS_PATH/bin/nsys profile --stats=true --force-overwrite=true -t nvtx,cuda --output=/pscratch/sd/c/co232/titan/torchtitan/nsys-res/tp_4_dp_2_shard_pp_1_cp_2_1itr_nccl2.27_nsys2025.${SLURM_PROCID}.${SLURM_JOBID} $TORCHRUN_CMD
+# srun $SLURM_ARGS $NSYS_PATH/bin/nsys profile --stats=true --force-overwrite=true -t nvtx,cuda --output=/pscratch/sd/c/co232/titan/torchtitan/nsys-res/tp_4_dp_2_shard_pp_1_cp_2_10itrs_nccl2.27_nsys2025.${SLURM_PROCID}.${SLURM_JOBID} $TORCHRUN_CMD
 
 if $PROFILE; then
   echo "🔍 Profiling only Node 0 under Nsight Systems…"
@@ -91,7 +91,7 @@ if $PROFILE; then
         --stats=true \
         --force-overwrite=true \
         -t nvtx,cuda \
-        --output=/pscratch/sd/c/co232/titan/torchtitan/nsys-res/tp_4_dp_2_shard_pp_1_cp_2_1itr_nccl2.27_nsys2025-3.${SLURM_PROCID}.${SLURM_JOBID} \
+        --output=/pscratch/sd/c/co232/titan/torchtitan/nsys-res/tp_4_dp_2_shard_pp_1_cp_2_10itrs_nccl2.21_nsys2025-3.${SLURM_PROCID}.${SLURM_JOBID} \
         '"$TORCHRUN_CMD"'" 
       eval \$CMD
     else
