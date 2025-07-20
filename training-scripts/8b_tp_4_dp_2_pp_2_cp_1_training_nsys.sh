@@ -21,10 +21,9 @@ case "$SLURM_NODEID" in
 esac
 export LOG_RANK
 
-CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/llama3/train_configs/llama3_8b_tp_4_dp_2_shard_pp_1_cp_2.toml"}
-# CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/llama3/train_configs/debug_model.toml"}
+CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/llama3/train_configs/llama3_8b_tp_4_dp_2_pp_2_cp_1_nsys.toml"}
 export HF_HOME=/pscratch/sd/c/co232/hf_cache
-export TORCHTITAN_LOGDIR=/pscratch/sd/c/co232/my_tb_logs_8b_tp_4_dp_2_shard_pp_1_cp_2
+export TORCHTITAN_LOGDIR=/pscratch/sd/c/co232/my_tb_logs_8b_tp_4_dp_2_pp_2_cp_1_nsys
 
 overrides=""
 if [ $# -ne 0 ]; then
@@ -79,8 +78,6 @@ TORCHRUN_CMD="torchrun \
     --job.config_file ${CONFIG_FILE} \
     ${overrides}"
 
-# srun $SLURM_ARGS $NSYS_PATH/bin/nsys profile --stats=true --force-overwrite=true -t nvtx,cuda --output=/pscratch/sd/c/co232/titan/torchtitan/nsys-res/tp_4_dp_2_shard_pp_1_cp_2_10itrs_nccl2.27_nsys2025.${SLURM_PROCID}.${SLURM_JOBID} $TORCHRUN_CMD
-
 if $PROFILE; then
   echo "🔍 Profiling only Node 0 under Nsight Systems…"
   # Kick off all ranks under one srun, but wrap in a bash -lc so
@@ -91,7 +88,7 @@ if $PROFILE; then
         --stats=true \
         --force-overwrite=true \
         -t nvtx,cuda \
-        --output=/pscratch/sd/c/co232/titan/torchtitan/nsys-res/tp_4_dp_2_shard_pp_1_cp_2_10itrs_nccl2.21_nsys2025-3.${SLURM_PROCID}.${SLURM_JOBID} \
+        --output=/pscratch/sd/c/co232/nsys_traces/tp_4_dp_2_shard_pp_2_20itrs_nccl2.21_nsys2025-3.${SLURM_PROCID}.${SLURM_JOBID} \
         '"$TORCHRUN_CMD"'" 
       eval \$CMD
     else
