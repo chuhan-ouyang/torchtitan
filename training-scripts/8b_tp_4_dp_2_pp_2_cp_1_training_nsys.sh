@@ -78,24 +78,50 @@ TORCHRUN_CMD="torchrun \
     --job.config_file ${CONFIG_FILE} \
     ${overrides}"
 
+BASE_DIR=/pscratch/sd/c/co232/nsys_tp_4_dp_2_shard_pp_2_20itrs_nccl2.27_nsys2025-3
+
+# Per Node Nsys
 if $PROFILE; then
-  echo "🔍 Profiling only Node 0 under Nsight Systems…"
-  # Kick off all ranks under one srun, but wrap in a bash -lc so
-  # each task can inspect $SLURM_PROCID:
+  echo "Profiling on every node…"
   srun $SLURM_ARGS bash -lc '
-    if [[ $SLURM_PROCID -eq 0 ]]; then
-      CMD="/global/homes/c/co232/nsight-systems-2025.3.1/bin/nsys profile \
-        --stats=true \
-        --force-overwrite=true \
-        -t nvtx,cuda \
-        --output=/pscratch/sd/c/co232/nsys_traces/tp_4_dp_2_shard_pp_2_20itrs_nccl2.21_nsys2025-3.${SLURM_PROCID}.${SLURM_JOBID} \
-        '"$TORCHRUN_CMD"'" 
-      eval \$CMD
-    else
-      CMD="'"$TORCHRUN_CMD"'" 
-      eval \$CMD
-    fi
+    #–– 1) Base traces folder and per-node subdir
+    BASE_DIR=/pscratch/sd/c/co232/nsys_tp_4_dp_2_shard_pp_2_20itrs_nccl2.27_nsys2025-3
+    NODE_DIR=$BASE_DIR/node${SLURM_NODEID}
+    mkdir -p $NODE_DIR
+
+    OUT=$NODE_DIR/trace.node${SLURM_NODEID}.${SLURM_JOBID}
+
+    #–– 3) Profile
+    /global/homes/c/co232/nsight-systems-2025.3.1/bin/nsys profile \
+      --stats=true \
+      --force-overwrite=true \
+      -t nvtx,cuda \
+      --output=$OUT \
+      '"$TORCHRUN_CMD"'
   '
 else
   srun $SLURM_ARGS $TORCHRUN_CMD
 fi
+
+# Node 0 Nsys
+# if $PROFILE; then
+#   echo "🔍 Profiling only Node 0 under Nsight Systems…"
+#   # Kick off all ranks under one srun, but wrap in a bash -lc so
+#   # each task can inspect $SLURM_PROCID:
+#   srun $SLURM_ARGS bash -lc '
+#     if [[ $SLURM_PROCID -eq 0 ]]; then
+#       CMD="/global/homes/c/co232/nsight-systems-2025.3.1/bin/nsys profile \
+#         --stats=true \
+#         --force-overwrite=true \
+#         -t nvtx,cuda \
+#         --output=/pscratch/sd/c/co232/nsys_traces/tp_4_dp_2_shard_pp_2_20itrs_nccl2.27_nsys2025-3.${SLURM_PROCID}.${SLURM_JOBID} \
+#         '"$TORCHRUN_CMD"'" 
+#       eval \$CMD
+#     else
+#       CMD="'"$TORCHRUN_CMD"'" 
+#       eval \$CMD
+#     fi
+#   '
+# else
+#   srun $SLURM_ARGS $TORCHRUN_CMD
+# fi
