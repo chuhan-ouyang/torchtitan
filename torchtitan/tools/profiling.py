@@ -34,6 +34,10 @@ def maybe_enable_profiling(config: JobConfig, *, global_step: int = 0):
 
         rank = torch.distributed.get_rank()
 
+        replica_id = None
+        if config.fault_tolerance.enable:
+            replica_id = config.fault_tolerance.replica_id
+
         def trace_handler(prof):
             step_start = prof.step_num - active + 1
             step_end = prof.step_num
@@ -45,7 +49,13 @@ def maybe_enable_profiling(config: JobConfig, *, global_step: int = 0):
 
             logger.info(f"Dumping profiler traces at step {prof.step_num}")
             begin = time.monotonic()
-            prof.export_chrome_trace(f"{curr_trace_dir}/rank{rank}_trace.json")
+
+            output_file = curr_trace_dir
+            if replica_id is not None:
+                output_file = os.path.join(output_file, f"replica{replica_id}")
+            output_file = os.path.join(output_file, f"rank{rank}_trace.json")
+
+            prof.export_chrome_trace(output_file)
             logger.info(
                 f"Finished dumping profiler traces in {time.monotonic() - begin:.2f} seconds"
             )

@@ -129,8 +129,15 @@ class Optimizer:
     lr: float = 8e-4
     """Learning rate to use"""
 
+    beta1: float = 0.9
+    beta2: float = 0.95
+    """Exponential moving average hyperparameters to use"""
+
     eps: float = 1e-8
     """Epsilon value to use"""
+
+    weight_decay: float = 0.1
+    """Weight decay to use"""
 
     implementation: Literal["for-loop", "foreach", "fused"] = "fused"
     """
@@ -216,8 +223,10 @@ class Training:
 
     mixed_precision_param: Literal["bfloat16", "float32"] = "bfloat16"
     """
-    torch dtype to use for parameters when applying mixed precision via FSDP.
-    This feature only takes effect when data_parallel_shard_degree > 1
+    torch dtype to use for parameters when applying mixed precision via fully_shard or torch.autocast.
+    This feature takes effect via fully_shard when data_parallel_shard_degree > 1 or
+    context_parallel_degree > 1; it takes effect via torch.autocast when data_replicate_degree >= 1
+    and no other parallelism is enabled, i.e. under DDP or single-device training.
     """
 
     mixed_precision_reduce: Literal["float32"] = "float32"
@@ -357,6 +366,14 @@ class Parallelism:
     The default value is 'allgather'.
     """
 
+    expert_parallel_degree: int = 1
+    """
+    Expert parallelism degree. 1 means disabled.
+    Currently, only "dp2ep" is supported, with the following constraints:
+    context_parallel_degree <= expert_parallel_degree <= data_parallel_shard_degree * context_parallel_degree
+    Note that this is still an experimental feature.
+    """
+
 
 @dataclass
 class Checkpoint:
@@ -369,21 +386,47 @@ class Checkpoint:
     When enable_checkpoint is set to true, checkpoints will be in {--job.dump_folder}/{--checkpoint.folder}.
     """
 
+    initial_load_path: str | None = None
+    """
+    This option specifies the path to the initial checkpoint to load, which is
+    particularly useful for resuming training from a previous run with a
+    different output path or when loading a checkpoint from a pre-trained model.
+    If the checkpoint folder for the current run is not empty,
+    located at {--job.dump_folder}/{--checkpoint.folder}, this option will be ignored.
+    This feature allows users to load an initial checkpoint from a different folder and
+    continue training, saving new checkpoints to the specified folder without affecting
+    the existing ones.
+
+    Note that the path should contain the full path to the checkpoint folder,
+    including the step number, if any; for example,
+    "//pre_train/checkpoints/llama3/llama3_8b/step_10000".
+    """
+
+    initial_load_model_only: bool = True
+    """
+    This option specifies if only the model should be loaded during the initial
+    checkpoint load. The option is only used when `initial_load_path` is specified.
+    If False, the checkpoint at `initial_load_path` is treated as a standard training
+    checkpoint, including optimizer and training states.
+    The default setting for this option is True. Note that you will have to use
+    `--checkpoint.no_initial_load_model_only` to override the default setting.
+    """
+
     interval: int = 500
     """Checkpointing interval in steps."""
 
-    model_weights_only: bool = False
+    last_save_model_only: bool = True
     """
-    When model_weights_only=True, only model weights will be saved at the end of training.
-    With this, checkpoints can be loaded using `torch.load(..., weights_only=True)` after conversion.
-    When model_weights_only=False, the full checkpoint will be saved.
+    When last_save_model_only=True, only the model will be saved at the end of training,
+    the last save.  With this, checkpoints can be loaded using `torch.load(..., weights_only=True)`
+    after conversion.  When last_save_model_only=False, the full checkpoint will be saved.
     A full checkpoint includes model, optimizer and train_state, which can be used to resume training.
-    The default value is false.
+    The default value is True.
     """
 
     export_dtype: Literal["float16", "bfloat16", "float32"] = "float32"
     """
-    Converts to the specified precision when training completes and model_weights_only=true.
+    Converts to the specified precision when training completes and last_save_model_only=true.
     """
 
     create_seed_checkpoint: bool = False
@@ -427,6 +470,25 @@ class Checkpoint:
     This will load the model only, excluding the specified keys.
     """
 
+    enable_first_step_checkpoint: bool = False
+    """
+    Enable the checkpoint save at first step. This will save a checkpoint immediately
+    after the first step to ensure checkpointing functions correctly. This is useful
+    when running on a new cluster or storage to verify checkpointing without waiting
+    for many steps or checkpointing too frequently. The default value is False.
+    """
+
+    last_save_in_hf: bool = False
+    """
+    Enable the use of Hugging Face's safetensors format for checkpointing. This will save the
+    final checkpoints in safetensors format instead of the default DCP format, after necessary
+    model state dict transformation. There will be a performance cost in using this as we need
+    to consolidate the sharded tensors to full tensors as a separate step.
+    last_save_model_only must be true because safetensors doesn't support saving
+    non-tensors. On load, this argument isn't needed as we will detect whether the loaded
+    checkpoint is in safetensors format or not. The default value is False.
+    """
+
 
 @dataclass
 class ActivationCheckpoint:
@@ -437,6 +499,20 @@ class ActivationCheckpoint:
     """
     Selective activation checkpointing options ['int', 'op'].
     'int' (e.g., 2) for every nth layer, or 'op' for op level ac.
+    """
+
+    per_op_sac_force_recompute_mm_shapes_by_fqns: list[str] = field(
+        default_factory=lambda: ["moe.router.gate"]
+    )
+    """
+    When per-op selective ac is used, this list of fully qualified names is used
+    to determine which mm shapes to force recompute, rather than being considered
+    by rest of the sac policy, e.g save every other mm. Only nn.Linear modules are
+    supported today.
+
+    Note: this config applies to mms not limited to those matching the specified
+    fqns, e.g. if "moe.router.gate", corresponding to Linear(in, out), is specified,
+    ANY mm with shape matching (*, in) x (in, out) will be force recomputed.
     """
 
 
@@ -471,6 +547,13 @@ class Float8:
     If True, emulation is used instead of hardware accelerated gemm. This is for test purpose only,
     as the current CI does not have sm_89 capability, required by Float8.
     Not compatible with torch.compile.
+    """
+
+    moe_fqns_prototype: list[str] | str = field(default_factory=list)
+    """
+    Comma-separated list of fully qualified names of MoE modules to apply float8 rowwise training to.
+    This is a prototype feature that requires the torchao nightly build.
+    Example: --float8.moe_fqns_prototype="experts"
     """
 
 
@@ -526,6 +609,17 @@ class FaultTolerance:
     Note that this is still an experimental feature.
     """
 
+    process_group: str = "gloo"
+    """
+    The process group to use for fault tolerance. Currently, only "gloo" and "nccl" are supported.
+    """
+
+    process_group_timeout_ms: int = 10000
+    """
+    The process group will abort if operations don't succeed within this duration.
+    Note: This currently only works with gloo process group.
+    """
+
     replica_id: int = 0
     """The TorchFT replica ID of this run."""
 
@@ -552,6 +646,43 @@ class FaultTolerance:
     is set.
     """
 
+    should_quantize: bool = False
+    """
+    Whether to quantize the gradients before allreduce.
+
+    Disabled by default since the quantization does utilize the GPU
+    and uses more collectives. Enabling this requires knowing about
+    the tradeoffs between GPU utilization and communication.
+
+
+    This is only used when "semi_sync_method" is set.
+    """
+
+    fragment_sync_delay: int = 0
+    """
+    Controls the number of inner steps to wait before blocking on a
+    model fragment's synchronization. This is the "tao" parameter in
+    the Streaming DiLoCo paper.
+
+    By default, each model fragment will be synced at the same step
+    at which the allreduce is issued. Enabling delay can improve
+    communication and computation overlap, but at the cost of compromising
+    model quality
+
+    This is only used when "semi_sync_method" is set.
+    """
+
+    fragment_update_alpha: float = 0.0
+    """
+    Determines how to mix the local and global optimized parameters
+
+    By default, we just use the global parameters. This ensures all
+    DDP replicas have the same parameters after syncrhonizing on
+    the fragment. Tuning this can also affect the model quality.
+
+    This is only used when "semi_sync_method" is set.
+    """
+
 
 @dataclass
 class Experimental:
@@ -571,6 +702,35 @@ class Experimental:
     a user defined JobConfig dataclass. Similar to ``--experimental.custom_model_path``, the user
     needs to ensure that the path can be imported.
     """
+
+
+@dataclass
+class Validation:
+    enabled: bool = False
+    """Enable validation to default run validation after each training loop"""
+
+    dataset: str = "c4_validation"
+    """Dataset to use for validation"""
+
+    dataset_path: str | None = None
+    """Path to dataset to use for validation"""
+
+    local_batch_size: int = 8
+    """Batch size for validation"""
+
+    seq_len: int = 2048
+    """Sequence length for validation"""
+
+    freq: int = 10
+    """Frequency of validation"""
+
+    steps: int = -1
+    """Number of steps to take in the validation set, -1 means consuming all the data in the validation dataset"""
+
+    def __post_init__(self):
+        assert (
+            self.steps > 0 or self.steps == -1
+        ), "validation steps must be positive or -1"
 
 
 @dataclass
@@ -597,6 +757,7 @@ class JobConfig:
     memory_estimation: MemoryEstimation = field(default_factory=MemoryEstimation)
     fault_tolerance: FaultTolerance = field(default_factory=FaultTolerance)
     experimental: Experimental = field(default_factory=Experimental)
+    validation: Validation = field(default_factory=Validation)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -762,7 +923,15 @@ class ConfigManager:
                 self.config.model.tokenizer_path = old_tokenizer_path
                 logger.warning(
                     f"Temporarily switching to previous default tokenizer path {old_tokenizer_path}. "
-                    "Please update your config."
+                    "Please download the new tokenizer model (python scripts/download_tokenizer.py) and update your config."
+                )
+        else:
+            # Check if we are using tokenizer.model, if so then we need to alert users to redownload the tokenizer
+            if self.config.model.tokenizer_path.endswith("tokenizer.model"):
+                raise Exception(
+                    "You are using the old tokenizer.model, please redownload the tokenizer ",
+                    "(python scripts/download_tokenizer.py --repo_id meta-llama/Llama-3.1-8B) ",
+                    " and update your config to the directory of the downloaded tokenizer.",
                 )
 
     @staticmethod

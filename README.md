@@ -6,9 +6,12 @@
 
 [![integration tests](https://github.com/pytorch/torchtitan/actions/workflows/integration_test_8gpu.yaml/badge.svg?branch=main)](https://github.com/pytorch/torchtitan/actions/workflows/integration_test_8gpu.yaml?query=branch%3Amain)
 [![arXiv](https://img.shields.io/badge/arXiv-2410.06511-b31b1b.svg)](https://arxiv.org/abs/2410.06511)
-[![ICLR](https://img.shields.io/badge/ICLR-2025-blue.svg)](https://iclr.cc/virtual/2025/poster/29620)
+[![ICLR](https://img.shields.io/badge/ICLR-2025-violet.svg)](https://iclr.cc/virtual/2025/poster/29620)
 [![forum](https://img.shields.io/badge/pytorch-forum-DE3412.svg)](https://discuss.pytorch.org/c/distributed/torchtitan/44)
 [![license](https://img.shields.io/badge/license-BSD_3--Clause-lightgrey.svg)](./LICENSE)
+[![pip](https://img.shields.io/pypi/v/torchtitan?color=blue)](https://pypi.org/project/torchtitan/)
+[![conda](https://img.shields.io/conda/vn/conda-forge/torchtitan?color=green)](https://anaconda.org/conda-forge/torchtitan)
+
 
 </div>
 
@@ -17,7 +20,8 @@ To use the latest features of `torchtitan`, we recommend using the most recent P
 
 
 ## Latest News
-- [2025/04] Our paper has been accepted by [ICLR 2025](https://iclr.cc/virtual/2025/poster/29620). The poster will be presented on Friday April 25th.
+- [2025/07] We released `torchtitan` [v0.1.0](https://github.com/pytorch/torchtitan/releases), and also set up nightly builds.
+- [2025/04] Our paper was accepted by [ICLR 2025](https://iclr.cc/virtual/2025/poster/29620).
 - [2025/04] [Llama 4](torchtitan/experiments/llama4/) initial support is available as an experiment.
 - [2025/04] Training the diffusion model [FLUX](torchtitan/experiments/flux/) with FSDP/HSDP is available as an experiment.
 - [2025/04] The frontend implementation of [SimpleFSDP](torchtitan/experiments/simple_fsdp/), a compiler-based FSDP framework, is available as an experiment.
@@ -71,40 +75,62 @@ To accelerate contributions to and innovations around torchtitan, we are hosting
     - estimate FSDP/HSDP memory usage without materializing the model
     - run distributed inference with Tensor Parallel
 
-We report [performance](docs/performance.md) on up to 512 GPUs, and verify [loss converging](docs/converging.md) correctness of various techniques.
+We report [performance](benchmarks/llama3_h100_202412_torchtitan.md) on up to 512 GPUs, and verify [loss converging](docs/converging.md) correctness of various techniques.
 
 ### Dive into the code
 
 You may want to see how the model is defined or how parallelism techniques are applied. For a guided tour, see these files first:
 * [torchtitan/train.py](torchtitan/train.py) - the main training loop and high-level setup code
-* [torchtitan/models/llama3/model.py](torchtitan/models/llama3/model.py) - the Llama 3.1 model definition
-* [torchtitan/models/llama3/parallelize_llama.py](torchtitan/models/llama3/parallelize_llama.py) - helpers for applying Data Parallel, Tensor Parallel, activation checkpointing, and `torch.compile` to the model
-* [torchtitan/models/llama3/pipeline_llama.py](torchtitan/models/llama3/pipeline_llama.py) - helpers for applying Pipeline Parallel to the model
+* [torchtitan/models/llama3/model/model.py](torchtitan/models/llama3/model/model.py) - the Llama 3.1 model definition
+* [torchtitan/models/llama3/infra/parallelize.py](torchtitan/models/llama3/infra/parallelize.py) - helpers for applying Data Parallel, Tensor Parallel, activation checkpointing, and `torch.compile` to the model
+* [torchtitan/models/llama3/infra/pipeline.py](torchtitan/models/llama3/infra/pipeline.py) - helpers for applying Pipeline Parallel to the model
 * [torchtitan/components/checkpoint.py](torchtitan/components/checkpoint.py) - utils for saving/loading distributed checkpoints
-* [torchtitan/components/float8.py](torchtitan/components/float8.py) - utils for applying Float8 techniques
+* [torchtitan/components/quantization/float8.py](torchtitan/components/quantization/float8.py) - utils for applying Float8 techniques
 
 
 ## Installation
+
+One can choose to install `torchtitan` from a stable release, a nightly build, or directly run the source code. Please [install PyTorch](https://pytorch.org/get-started/locally/) before proceeding.
+
+### Stable releases
+One can install the latest [stable release]((https://github.com/pytorch/torchtitan/releases)) of `torchtitan` via `pip` or `conda`.
+```sh
+pip install torchtitan
+```
+```sh
+conda install conda-forge::torchtitan
+```
+Note that each stable release pins the nightly versions of `torch` and `torchao`. Please see [release.md](docs/release.md) for more details.
+
+### Nightly builds
+
+This method requires the nightly build of PyTorch. You can replace `cu126` with another version of cuda (e.g. `cu128`) or an AMD GPU (e.g. `rocm6.3`).
+
+```sh
+pip install --pre torchtitan --index-url https://download.pytorch.org/whl/nightly/cu126
+```
+
+### From source
+
+This method requires the nightly build of PyTorch or the latest PyTorch built from source.
 
 ```bash
 git clone https://github.com/pytorch/torchtitan
 cd torchtitan
 pip install -r requirements.txt
-pip3 install --pre torch --index-url https://download.pytorch.org/whl/nightly/cu126 --force-reinstall
-[For AMD GPU] pip3 install --pre torch --index-url https://download.pytorch.org/whl/nightly/rocm6.3 --force-reinstall
 ```
 
 ### Downloading a tokenizer
 
-`torchtitan` currently supports training Llama 3.1 (8B, 70B, 405B) out of the box. To get started training these models, we need to download a tokenizer.model. Follow the instructions on the official [meta-llama](https://huggingface.co/meta-llama/Llama-3.1-8B) repository to ensure you have access to the Llama model weights.
+`torchtitan` currently supports training Llama 3.1 (8B, 70B, 405B) out of the box. To get started training these models, we need to download the tokenizer. Follow the instructions on the official [meta-llama](https://huggingface.co/meta-llama/Llama-3.1-8B) repository to ensure you have access to the Llama model weights.
 
 Once you have confirmed access, you can run the following command to download the Llama 3.1 tokenizer to your local machine.
 
 ```bash
 # Get your HF token from https://huggingface.co/settings/tokens
 
-# Llama 3.1 tokenizer.model
-python scripts/download_tokenizer.py --repo_id meta-llama/Meta-Llama-3.1-8B --tokenizer_path "original" --hf_token=...
+# Llama 3.1 tokenizer
+python scripts/download_tokenizer.py --repo_id meta-llama/Llama-3.1-8B --hf_token=...
 ```
 
 ### Start a training run
