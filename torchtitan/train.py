@@ -11,6 +11,8 @@ from datetime import timedelta
 from typing import Any, Generator, Iterable, Optional
 
 import torch
+from torch.profiler import ExecutionTraceObserver, profile
+
 from torch.distributed.elastic.multiprocessing.errors import record
 
 import torchtitan.components.ft as ft
@@ -34,6 +36,9 @@ from torchtitan.tools.profiling import (
 
 from ctypes import CDLL
 
+def trace_handler(prof):
+    rank = int(os.environ["LOCAL_RANK"])
+    prof.export_chrome_trace(f"kineto_trace_{rank}.json")
 
 class Trainer(torch.distributed.checkpoint.stateful.Stateful):
     job_config: JobConfig
@@ -431,6 +436,7 @@ class Trainer(torch.distributed.checkpoint.stateful.Stateful):
         # entire step will not be executed.
         for microbatch in range(self.gradient_accumulation_steps):
             input_dict, labels = next(data_iterator)
+            # logger.info(f"Input dict shape: { {k: v.shape for k, v in input_dict.items()} }")
             loss = self.forward_backward_step(input_dict, labels)
             accumulated_losses.append(loss.detach())
 
@@ -474,7 +480,7 @@ class Trainer(torch.distributed.checkpoint.stateful.Stateful):
         self.metrics_processor.log(self.step, global_avg_loss, global_max_loss)
 
     @record
-    def train(self):
+    def train(self, prof, et):
         job_config = self.job_config
 
         self.checkpointer.load(step=job_config.checkpoint.load_step)
@@ -495,6 +501,11 @@ class Trainer(torch.distributed.checkpoint.stateful.Stateful):
         ):
             data_iterator = self.batch_generator(self.dataloader)
             while self.step < job_config.training.steps:
+                if self.step == 3:
+                    et.start()
+                if self.step == 4:
+                    et.stop()
+
                 self.step += 1
                 if self.step % self.profile_freq == 0:
                     self.start_profiler()
@@ -527,6 +538,7 @@ class Trainer(torch.distributed.checkpoint.stateful.Stateful):
                         ),
                         world_mesh=self.world_mesh,
                     )
+                prof.step()
 
         if torch.distributed.get_rank() == 0:
             logger.info("Sleeping 2 seconds for other ranks to complete")
@@ -552,24 +564,45 @@ if __name__ == "__main__":
     config = config_manager.parse_args()
     trainer: Optional[Trainer] = None
 
-    try:
-        trainer = Trainer(config)
+    rank = int(os.environ["LOCAL_RANK"])
+    et = ExecutionTraceObserver()
+    et.register_callback(f"pytorch_et_{rank}.json")
+    et.start()
 
-        if config.checkpoint.create_seed_checkpoint:
-            assert (
-                int(os.environ["WORLD_SIZE"]) == 1
-            ), "Must create seed checkpoint using a single device, to disable sharding."
-            assert (
-                config.checkpoint.enable_checkpoint
-            ), "Must enable checkpointing when creating a seed checkpoint."
-            trainer.checkpointer.save(curr_step=0, force=True)
-            logger.info("Created seed checkpoint")
-        else:
-            trainer.train()
-    finally:
-        if trainer:
-            trainer.close()
+    with profile(
+        activities=[
+            torch.profiler.ProfilerActivity.CPU,
+            torch.profiler.ProfilerActivity.CUDA,
+        ],
+        schedule=torch.profiler.schedule(wait=3, warmup=0, active=1),
+        on_trace_ready=trace_handler
+    ) as prof:
 
-        if torch.distributed.is_initialized():
-            torch.distributed.destroy_process_group()
-            logger.info("Process group destroyed.")
+        try:
+            trainer = Trainer(config)
+
+            if config.checkpoint.create_seed_checkpoint:
+                assert (
+                    int(os.environ["WORLD_SIZE"]) == 1
+                ), "Must create seed checkpoint using a single device, to disable sharding."
+                assert (
+                    config.checkpoint.enable_checkpoint
+                ), "Must enable checkpointing when creating a seed checkpoint."
+                trainer.checkpointer.save(curr_step=0, force=True)
+                logger.info("Created seed checkpoint")
+            else:
+                trainer.train(prof, et)
+        except Exception:
+            if trainer:
+                trainer.close()
+            raise
+        finally:
+            if trainer:
+                trainer.close()
+
+            if torch.distributed.is_initialized():
+                torch.distributed.destroy_process_group()
+                logger.info("Process group destroyed.")
+
+    et.stop()
+    et.unregister_callback()
