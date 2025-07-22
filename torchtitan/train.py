@@ -37,8 +37,33 @@ from torchtitan.tools.profiling import (
 from ctypes import CDLL
 
 def trace_handler(prof):
-    rank = int(os.environ["LOCAL_RANK"])
-    prof.export_chrome_trace(f"kineto_trace_{rank}.json")
+    rank = int(os.environ["RANK"])
+    outdir = "/pscratch/sd/c/co232/astra-sim-logs-new"
+    os.makedirs(outdir, exist_ok=True)
+    outfile = os.path.join(outdir, f"kineto_trace_{rank}.json")
+    prof.export_chrome_trace(outfile)
+
+# def trace_handler(prof):
+#     import os
+#     import torch.distributed as dist
+
+#     # 1) Shared output directory
+#     outdir = "/pscratch/sd/c/co232/astra-sim-logs"
+#     os.makedirs(outdir, exist_ok=True)
+
+#     # 2) Global rank guard
+#     if dist.is_initialized():
+#         rank = dist.get_rank()
+#     else:
+#         # torchrun sets RANK; fallback to LOCAL_RANK if needed
+#         rank = int(os.environ.get("RANK", os.environ.get("LOCAL_RANK", "0")))
+
+#     # 3) Unique per‐rank filename
+#     outfile = os.path.join(outdir, f"kineto_trace_{rank}.json")
+
+#     # 4) Export Chrome (Kineto) trace
+#     prof.export_chrome_trace(outfile)
+
 
 class Trainer(torch.distributed.checkpoint.stateful.Stateful):
     job_config: JobConfig
@@ -564,9 +589,14 @@ if __name__ == "__main__":
     config = config_manager.parse_args()
     trainer: Optional[Trainer] = None
 
-    rank = int(os.environ["LOCAL_RANK"])
+    outdir = "/pscratch/sd/c/co232/astra-sim-logs-new"
+    os.makedirs(outdir, exist_ok=True)
+
+    rank = int(os.environ["RANK"])
+    # rank = int(os.environ.get("RANK", os.environ.get("LOCAL_RANK", 0)))
+
     et = ExecutionTraceObserver()
-    et.register_callback(f"pytorch_et_{rank}.json")
+    et.register_callback(os.path.join(outdir, f"pytorch_et_{rank}.json"))
     et.start()
 
     with profile(
