@@ -7,7 +7,7 @@ description = "Llama 3 8B training"
 
 [profiling]
 enable_profiling = true
-save_traces_folder = "/pscratch/sd/c/co232/test"
+save_traces_folder = "/pscratch/sd/c/co232/torch_trace_8b_tp_4_dp_2_pp_2_cp_1_10itrs_nsys"
 profile_freq = 20
 profile_window = 10
 # first 20 steps:  wait (7) + warmup (3) + profile window (10)

@@ -80,23 +80,15 @@ TORCHRUN_CMD="torchrun \
     --job.config_file ${CONFIG_FILE} \
     ${overrides}"
 
-BASE_DIR=/pscratch/sd/c/co232/nsys_tp_4_dp_2_shard_pp_2_20itrs_nccl2.27_nsys2025-3
+BASE_DIR=/pscratch/sd/c/co232/nsys_tp_4_dp_2_shard_pp_2_10itrs_nccl2.27_nsys2025-3
 
 if $PROFILE; then
   echo "Profiling on every node…"
 
-  # srun $SLURM_ARGS bash -lc "
-  #   /global/homes/c/co232/nsight-systems-2025.3.1/bin/nsys profile \
-  #     --force-overwrite=true \
-  #     -t nvtx,cuda \
-  #     --output=/pscratch/sd/c/co232/nsys_tp_4_dp_2_shard_pp_2_20itrs_nccl2.27_nsys2025-3/node\$SLURM_NODEID/bashlc_trace.node\$SLURM_NODEID.\$SLURM_JOBID \
-  #     $TORCHRUN_CMD
-  # "
-
   srun $SLURM_ARGS /global/homes/c/co232/nsight-systems-2025.3.1/bin/nsys profile \
       --force-overwrite=true \
       -t nvtx,cuda \
-      --output=/pscratch/sd/c/co232/nsys_tp_4_dp_2_shard_pp_2_20itrs_nccl2.27_nsys2025-3_nobashlc/%q{SLURM_NODEID}_%q{SLURM_JOBID} \
+      --output=/pscratch/sd/c/co232/nsys_tp_4_dp_2_shard_pp_2_10itrs_nccl2.27_nsys2025-3_nobashlc/%q{SLURM_NODEID}_%q{SLURM_JOBID} \
       $TORCHRUN_CMD
 
 else
