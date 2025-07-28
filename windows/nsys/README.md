@@ -8,6 +8,7 @@ Generate nvtx push pop kernels from nsys-rep files
 2. separate_ranks.sh/separate_ranks.py
 
 Turn 1 node's files into 4 ranks traces
+---
 Node0
 TID         Rank
 1114945     0
@@ -42,5 +43,10 @@ Remove TP entries + AR + misc
 Between start and end remove all TP entries
 Remove NCCL:ncclCommInitRankConfig, NCCL:ncclBroadcast, :pp_fw_bw CCCL:*, NCCL:ncclAllReduce
 
-3. Label PP vs DP
-5. Calculate window sizes
+3. label_parallelism.sh/label_parallelism.py
+Label kernel as DP or PP
+
+5. calc_wind.sh/calc_wind.py
+window_type	wind_start_ts	wind_end_ts	wind_duration_ns	kernel_before_bytes	kernel_after_bytes
+
+6. plot_per_rank_wnd.ipynb
