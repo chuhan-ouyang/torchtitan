@@ -13,7 +13,7 @@ def parse_args():
     )
     p.add_argument(
         "-o", "--output",
-        help="Output CSV file (defaults to input_labeled.csv)",
+        help="Output CSV file",
         default=None
     )
     return p.parse_args()

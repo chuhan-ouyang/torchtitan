@@ -9,7 +9,7 @@ def parse_args():
         description="Label TP/DP for DevKernel trace based on NCCL trace"
     )
     p.add_argument(
-        'ncclevents',
+        'nvtxevents',
         help="CSV file with NCCL event logs (contains Name and Parallelism columns)"
     )
     p.add_argument(
