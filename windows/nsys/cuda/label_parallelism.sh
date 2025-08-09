@@ -1,0 +1,4 @@
+#!/bin/bash
+python3 label_parallelism.py \
+/global/homes/c/co232/ReCCL-workspace/torchtitan/windows/nsys/nvtx/traces/node0_nvtx_pushpop_trace_pid_1114945_all_labeled.csv \
+traces/node0_cuda_gpu_trace_local_rank_0_filtered.csv \

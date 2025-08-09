@@ -1,3 +1,0 @@
-#!/bin/bash
-python3 calc_wind.py traces/node0_nvtx_pushpop_trace_pid_1114945_cleaned_parallelism_labeled.csv traces/rank0_windows.csv
-python3 calc_wind.py traces/node2_nvtx_pushpop_trace_pid_563290_cleaned_parallelism_labeled.csv traces/rank8_windows.csv

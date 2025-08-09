@@ -22,16 +22,20 @@ def main():
         print("Input CSV is empty; no windows to compute.")
         return
 
+    # # Force everything to Python ints to avoid any numpy overflow
+    # df['Start (ns)']    = df['Start (ns)'].apply(int)
+    # df['Duration (ns)'] = df['Duration (ns)'].apply(int)
+
     windows = []
     # Initialize with the first row
     prev_type = df.iloc[0]['Parallelism']
-    prev_end = df.iloc[0]['End (ns)']
+    prev_end = int(df.iloc[0]['Start (ns)']) + int(df.iloc[0]['Duration (ns)'])
 
     # Iterate over subsequent rows
     for _, row in df.iloc[1:].iterrows():
         curr_type = row['Parallelism']
-        curr_start = row['Start (ns)']
-        curr_end = row['End (ns)']
+        curr_start = int(row['Start (ns)'])
+        curr_end = int(row['Start (ns)']) + int(row['Duration (ns)'])
 
         # Detect a switch in parallelism type
         if curr_type != prev_type:
@@ -39,6 +43,10 @@ def main():
             wind_start_ns = prev_end
             wind_end_ns = curr_start
             wind_duration_ns = wind_end_ns - wind_start_ns
+            print(f"{wind_start_ns} - {wind_end_ns}")
+            if wind_end_ns <= wind_start_ns:
+                print(f"Warning: Overlapping window ({window_type})")
+                wind_duration_ns = 0
 
             windows.append({
                 'window_type': window_type,
