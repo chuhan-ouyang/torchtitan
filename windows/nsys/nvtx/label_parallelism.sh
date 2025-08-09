@@ -1,0 +1,3 @@
+#!/bin/bash
+python3 label_parallelism.py traces/node0_nvtx_pushpop_trace_pid_1114945_cleaned.csv
+python3 label_parallelism.py traces/node2_nvtx_pushpop_trace_pid_563290_cleaned.csv
