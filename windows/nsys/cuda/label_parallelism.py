@@ -32,7 +32,7 @@ def main():
 
     # Read NCCL events
     try:
-        df_n = pd.read_csv(args.ncclevents)
+        df_n = pd.read_csv(args.nvtxevents)
     except Exception as e:
         print(f"Error reading NCCL events file: {e}", file=sys.stderr)
         sys.exit(1)
