@@ -32,6 +32,12 @@ def main():
     pp_circuits = []
     for idx in range(pp_len):
         rows = [df.iloc[idx] for df in pp_dfs]
+        print(f"PP circuit {idx}:")
+        for node, row in zip(nodes, rows):
+            start_val = to_int(row["Start (ns)"])
+            end_val = start_val + to_int(row["Duration (ns)"])
+            print(f"  Node {node}: start={start_val}, end={end_val}")
+
         start_ts = max(to_int(row["Start (ns)"]) for row in rows)
         end_ts   = max(to_int(row["Start (ns)"]) + to_int(row["Duration (ns)"]) for row in rows)
         pp_circuits.append({
@@ -53,6 +59,13 @@ def main():
 
         for idx in range(dp_len):
             rows = [df.iloc[idx] for df in dp_dfs]
+
+            print(f"DP circuit {idx} for group {group}:")
+            for node, row in zip(group, rows):
+                start_val = to_int(row["Start (ns)"])
+                end_val = start_val + to_int(row["Duration (ns)"])
+                print(f"  Node {node}: start={start_val}, end={end_val}")
+
             start_ts = max(to_int(row["Start (ns)"]) for row in rows)
             end_ts   = max(to_int(row["Start (ns)"]) + to_int(row["Duration (ns)"]) for row in rows)
             dp_circuits.append({
