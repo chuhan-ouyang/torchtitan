@@ -35,9 +35,17 @@ PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True" \
 TORCHFT_LIGHTHOUSE=${TORCHFT_LIGHTHOUSE} \
 
 # Multinode Configs
-nodes=( $( scontrol show hostnames $SLURM_JOB_NODELIST ) )
-head_node=${nodes[0]}
-head_node_ip=$( srun --nodes=1 --ntasks=1 -w "$head_node" hostname --ip-address )
+# nodes=( $( scontrol show hostnames $SLURM_JOB_NODELIST ) )
+# head_node=${nodes[0]}
+# head_node_ip=$( srun --nodes=1 --ntasks=1 -w "$head_node" hostname --ip-address )
+
+head_node=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n1)
+head_node_ip=$(srun -N1 -n1 -w "$head_node" bash -lc \
+  "ip -4 -o addr show dev hsn0 | awk '{print \$4}' | cut -d/ -f1 | head -n1")
+RDZV_PORT=29500
+
+export NCCL_SOCKET_IFNAME=hsn0
+export NCCL_OOB_NET_IFNAME=hsn0
 
 # Custom NCCL path for NCCL 2.27 build
 export NCCL_HOME=/global/u2/c/co232/opus-wksp/nccl/build
@@ -56,13 +64,10 @@ export NCCL_P2P_DISABLE=1
 export NCCL_IB_DISABLE=1
 export NCCL_NET_SHARED_COMM=0
 export NCCL_CROSS_NIC=0
-export NCCL_OOB_NET_IFNAME="^lo,docker"
-export NCCL_SOCKET_IFNAME="^lo,docker"
-export NCCL_SOCKET_FAMILY=AF_INET
 
 export TORCH_NCCL_HEARTBEAT_TIMEOUT=30
 
-num_nodes=4
+num_nodes=1
 
 SLURM_ARGS="--nodes=${num_nodes} \
             --ntasks=${num_nodes} \
@@ -99,5 +104,9 @@ if $PROFILE; then
 
 else
   echo "Running training normally…"
+  echo "head_node=${head_node}"
+  echo "head_node_ip=${head_node_ip}"
+  echo "rdzv=${head_node_ip}:${RDZV_PORT}"
+
   srun $SLURM_ARGS $TORCHRUN_CMD
 fi
