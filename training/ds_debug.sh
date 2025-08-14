@@ -23,7 +23,7 @@ export LOG_RANK
 
 CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/deepseek_v3/train_configs/debug_tp_4_dp_2_shard_pp_2_nsys.toml"}
 export HF_HOME=/pscratch/sd/c/co232/hf_cache
-export TORCHTITAN_LOGDIR=/pscratch/sd/c/co232/my_tb_logs_ds
+export TORCHTITAN_LOGDIR=/pscratch/sd/c/co232/my_tb_logs_8b_tp_4_dp_2_pp_2_cp_1_nsys
 
 overrides=""
 if [ $# -ne 0 ]; then
@@ -35,20 +35,12 @@ PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True" \
 TORCHFT_LIGHTHOUSE=${TORCHFT_LIGHTHOUSE} \
 
 # Multinode Configs
-# nodes=( $( scontrol show hostnames $SLURM_JOB_NODELIST ) )
-# head_node=${nodes[0]}
-# head_node_ip=$( srun --nodes=1 --ntasks=1 -w "$head_node" hostname --ip-address )
-
-head_node=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n1)
-head_node_ip=$(srun -N1 -n1 -w "$head_node" bash -lc \
-  "ip -4 -o addr show dev hsn0 | awk '{print \$4}' | cut -d/ -f1 | head -n1")
-RDZV_PORT=29500
-
-export NCCL_SOCKET_IFNAME=hsn0
-export NCCL_OOB_NET_IFNAME=hsn0
+nodes=( $( scontrol show hostnames $SLURM_JOB_NODELIST ) )
+head_node=${nodes[0]}
+head_node_ip=$( srun --nodes=1 --ntasks=1 -w "$head_node" hostname --ip-address )
 
 # Custom NCCL path for NCCL 2.27 build
-export NCCL_HOME=/global/u2/c/co232/opus-wksp/nccl/build
+export NCCL_HOME=/global/u2/c/co232/ReCCL-workspace/nccl/build
 export LD_LIBRARY_PATH="$NCCL_HOME/lib:$(echo "$LD_LIBRARY_PATH" | tr ':' '\n' | grep -v 'nccl' | paste -sd: -)"
 export LD_PRELOAD=$NCCL_HOME/lib/libnccl.so.2.27.6
 export LIBRARY_PATH="$NCCL_HOME/lib:$LIBRARY_PATH"
@@ -57,15 +49,13 @@ export CPATH="$NCCL_HOME/include:$CPATH"
 # Memory & NCCL Configs
 export NCCL_DEBUG=INFO
 # export NCCL_DEBUG_SUBSYS=INIT,ENV,COLL
-export NCCL_DEBUG_SUBSYS=INIT,GRAPH,NET
-export NCCL_BUFFSIZE=1048576
+export NCCL_DEBUG_SUBSYS=INIT
 
+export NCCL_BUFFSIZE=1048576
 export NCCL_P2P_DISABLE=1
 export NCCL_IB_DISABLE=1
-export NCCL_NET_SHARED_COMM=0
-export NCCL_CROSS_NIC=0
 
-export TORCH_NCCL_HEARTBEAT_TIMEOUT=30
+export NCCL_NVTX_LEVEL=2
 
 num_nodes=1
 
@@ -90,7 +80,6 @@ TORCHRUN_CMD="torchrun \
     --job.config_file ${CONFIG_FILE} \
     ${overrides}"
 
-# TODO: chnage later if running nsys
 BASE_DIR=/pscratch/sd/c/co232/nsys_tp_4_dp_2_shard_pp_2_10itrs_nccl2.27_nsys2025-3
 
 if $PROFILE; then
@@ -104,9 +93,5 @@ if $PROFILE; then
 
 else
   echo "Running training normally…"
-  echo "head_node=${head_node}"
-  echo "head_node_ip=${head_node_ip}"
-  echo "rdzv=${head_node_ip}:${RDZV_PORT}"
-
   srun $SLURM_ARGS $TORCHRUN_CMD
 fi
