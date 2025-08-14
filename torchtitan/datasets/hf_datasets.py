@@ -11,7 +11,7 @@ from typing import Any, Callable
 
 import torch
 
-from datasets import Dataset, load_dataset
+from datasets import Dataset, load_dataset, config
 from datasets.distributed import split_dataset_by_node
 from torch.distributed.checkpoint.stateful import Stateful
 from torch.utils.data import IterableDataset
@@ -22,9 +22,26 @@ from torchtitan.config import JobConfig
 from torchtitan.tools.logging import logger
 
 
+# def _load_c4_dataset(dataset_path: str, split: str):
+#     """Load C4 dataset with default configuration."""
+#     return load_dataset(dataset_path, name="en", split=split, streaming=True)
+
 def _load_c4_dataset(dataset_path: str, split: str):
     """Load C4 dataset with default configuration."""
-    return load_dataset(dataset_path, name="en", split=split, streaming=True)
+    # Force datasets library into offline mode:
+    print("offline c4 dataset loader")
+    config.HF_DATASETS_OFFLINE = True
+    ds = load_dataset(
+        "allenai/c4",                                # dataset ID
+        name="en",                                   # config name
+        split="train",                               # only the train split
+        cache_dir="/pscratch/sd/c/co232/hf_cache/allenai___c4",
+        streaming=True,                             # map-style access
+        download_mode="reuse_cache_if_exists"        # reuse what's already there
+    )
+    return ds
+    # print("returned c4 dataset loader")
+    # return load_dataset(dataset_path, name="en", split="train", streaming=True, cache_dir="/pscratch/sd/c/co232/hf_cache/datasets")
 
 
 def _process_c4_text(sample: dict[str, Any]) -> str:
@@ -41,8 +58,13 @@ class DatasetConfig:
 
 # Add your dataset here here - more information at docs/datasets.md
 DATASETS = {
+    # "c4": DatasetConfig(
+    #     path="allenai/c4",
+    #     loader=partial(_load_c4_dataset, split="train"),
+    #     text_processor=_process_c4_text,
+    # ),
     "c4": DatasetConfig(
-        path="allenai/c4",
+        path="/pscratch/sd/c/co232/hf_cache/allenai___c4",
         loader=partial(_load_c4_dataset, split="train"),
         text_processor=_process_c4_text,
     ),
@@ -57,7 +79,6 @@ DATASETS = {
         text_processor=_process_c4_text,
     ),
 }
-
 
 def _validate_dataset(
     dataset_name: str, dataset_path: str | None = None
@@ -92,7 +113,9 @@ class HuggingFaceDataset(IterableDataset, Stateful):
         path, dataset_loader, text_processor = _validate_dataset(
             dataset_name, dataset_path
         )
+        print("Finished validate dataset")
         ds = dataset_loader(path)
+        print("Finished dataset loader")
 
         self.dataset_name = dataset_name
         self._data = split_dataset_by_node(ds, dp_rank, dp_world_size)

@@ -89,8 +89,6 @@ TORCHRUN_CMD="torchrun \
     --job.config_file ${CONFIG_FILE} \
     ${overrides}"
 
-# TODO: chnage later if running nsys
-BASE_DIR=/pscratch/sd/c/co232/nsys_tp_4_dp_2_shard_pp_2_10itrs_nccl2.27_nsys2025-3
 
 if $PROFILE; then
   echo "Profiling on every node…"

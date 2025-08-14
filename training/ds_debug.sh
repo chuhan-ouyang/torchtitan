@@ -35,12 +35,19 @@ PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True" \
 TORCHFT_LIGHTHOUSE=${TORCHFT_LIGHTHOUSE} \
 
 # Multinode Configs
+
 nodes=( $( scontrol show hostnames $SLURM_JOB_NODELIST ) )
-head_node=${nodes[0]}
-head_node_ip=$( srun --nodes=1 --ntasks=1 -w "$head_node" hostname --ip-address )
+nodes_array=($nodes)
+head_node=${nodes_array[0]}
+head_node_ip=$(srun --nodes=1 --ntasks=1 -w "$head_node" hostname --ip-address)
+
+echo Node IP: $head_node_ip
+export LOGLEVEL=INFO
+export FI_PROVIDER="efa"
+export CUDA_LAUNCH_BLOCKING=0
 
 # Custom NCCL path for NCCL 2.27 build
-export NCCL_HOME=/global/u2/c/co232/ReCCL-workspace/nccl/build
+export NCCL_HOME=/global/u2/c/co232/opus-wksp/nccl/build
 export LD_LIBRARY_PATH="$NCCL_HOME/lib:$(echo "$LD_LIBRARY_PATH" | tr ':' '\n' | grep -v 'nccl' | paste -sd: -)"
 export LD_PRELOAD=$NCCL_HOME/lib/libnccl.so.2.27.6
 export LIBRARY_PATH="$NCCL_HOME/lib:$LIBRARY_PATH"
@@ -55,7 +62,11 @@ export NCCL_BUFFSIZE=1048576
 export NCCL_P2P_DISABLE=1
 export NCCL_IB_DISABLE=1
 
-export NCCL_NVTX_LEVEL=2
+# on your cluster you might need these:
+# set the network interface
+export NCCL_SOCKET_IFNAME="eth0,en,eth,em,bond"
+#export TORCH_DIST_INIT_BARRIER=1
+export FI_EFA_SET_CUDA_SYNC_MEMOPS=0
 
 num_nodes=1
 
@@ -80,16 +91,17 @@ TORCHRUN_CMD="torchrun \
     --job.config_file ${CONFIG_FILE} \
     ${overrides}"
 
-BASE_DIR=/pscratch/sd/c/co232/nsys_tp_4_dp_2_shard_pp_2_10itrs_nccl2.27_nsys2025-3
 
 if $PROFILE; then
   echo "Profiling on every node…"
 
+  dcgmi profile --pause
   srun $SLURM_ARGS /global/homes/c/co232/nsight-systems-2025.3.1/bin/nsys profile \
       --force-overwrite=true \
       -t nvtx,cuda \
       --output=/pscratch/sd/c/co232/nsys_tp_4_dp_2_shard_pp_2_10itrs_nccl2.27_nsys2025-3_nobashlc/%q{SLURM_NODEID}_%q{SLURM_JOBID} \
       $TORCHRUN_CMD
+  dcgmi profile --resume
 
 else
   echo "Running training normally…"
