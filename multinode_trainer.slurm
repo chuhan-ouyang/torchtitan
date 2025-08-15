@@ -22,7 +22,6 @@
 
 #SBATCH --partition=train
 
-
 nodes=( $( scontrol show hostnames $SLURM_JOB_NODELIST ) )
 nodes_array=($nodes)
 head_node=${nodes_array[0]}
