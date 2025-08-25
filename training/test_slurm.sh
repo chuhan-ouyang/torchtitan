@@ -47,13 +47,13 @@ dcgmi profile --pause
 srun \
   --job-name=torchtitan_multi_node \
   --partition=train \
-  --nodes=1 \
+  --nodes=4 \
   --ntasks-per-node=1 \
   --gpus-per-task=4 \
   --cpus-per-task=16 \
   --kill-on-bad-exit=1 \
   --export=ALL \
-  torchrun --nnodes 1 --nproc_per_node 4 \
+  torchrun --nnodes 4 --nproc_per_node 4 --rdzv_id tt_multi_${SLURM_JOB_ID} --rdzv_backend c10d --rdzv_endpoint "$head_node_ip:29500"\
   -m torchtitan.train --job.config_file ${CONFIG_FILE} "$@" \
 
 dcgmi profile --resume
