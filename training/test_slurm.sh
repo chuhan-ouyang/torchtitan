@@ -12,18 +12,16 @@ head_node_ip=$(srun --nodes=1 --ntasks=1 -w "$head_node" hostname --ip-address)
 echo Node IP: $head_node_ip
 
 # Custom NCCL path for NCCL 2.27 build
-# export NCCL_HOME=/global/u2/c/co232/opus-wksp/nccl/build
-# export LD_LIBRARY_PATH="$NCCL_HOME/lib:$(echo "$LD_LIBRARY_PATH" | tr ':' '\n' | grep -v 'nccl' | paste -sd: -)"
-# export LD_PRELOAD=$NCCL_HOME/lib/libnccl.so.2.27.6
-# export LIBRARY_PATH="$NCCL_HOME/lib:$LIBRARY_PATH"
-# export CPATH="$NCCL_HOME/include:$CPATH"
+export NCCL_HOME=/global/u2/c/co232/opus-wksp/nccl/build
+export LD_LIBRARY_PATH="$NCCL_HOME/lib:$(echo "$LD_LIBRARY_PATH" | tr ':' '\n' | grep -v 'nccl' | paste -sd: -)"
+export LD_PRELOAD=$NCCL_HOME/lib/libnccl.so.2.27.6
+export LIBRARY_PATH="$NCCL_HOME/lib:$LIBRARY_PATH"
+export CPATH="$NCCL_HOME/include:$CPATH"
 
 # From multinode_trainer.slurm
 export LOGLEVEL=INFO
-# Enable for A100
-export FI_PROVIDER="efa"
 export PYTHONFAULTHANDLER=1
-export CUDA_LAUNCH_BLOCKING=0
+# export CUDA_LAUNCH_BLOCKING=0
 
 export NCCL_DEBUG=INFO
 export NCCL_DEBUG_SUBSYS=INIT,NET,COLL
@@ -31,9 +29,11 @@ export NCCL_DEBUG_SUBSYS=INIT,NET,COLL
 export NCCL_PROTO=Simple
 export NCCL_ALGO=Ring
 
-export NCCL_P2P_DISABLE=1
-export NCCL_IB_DISABLE=1
-export NCCL_BUFFSIZE=1048576
+export CUDA_VISIBLE_DEVICES=0,1,2,3 
+
+# export NCCL_P2P_DISABLE=1
+# export NCCL_IB_DISABLE=1
+# export NCCL_BUFFSIZE=1048576
 
 CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/deepseek_v3/train_configs/deepseek_v3_16b.toml"}
 
@@ -53,7 +53,7 @@ srun \
   --cpus-per-task=16 \
   --kill-on-bad-exit=1 \
   --export=ALL \
-  torchrun --nnodes 4 --nproc_per_node 4 --rdzv_id tt_multi_${SLURM_JOB_ID} --rdzv_backend c10d --rdzv_endpoint "$head_node_ip:29500"\
+  torchrun --nnodes 4 --nproc_per_node 4 --rdzv_backend c10d --rdzv_endpoint "$head_node_ip:29510"\
   -m torchtitan.train --job.config_file ${CONFIG_FILE} "$@" \
 
 dcgmi profile --resume
