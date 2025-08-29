@@ -12,15 +12,16 @@ set -ex
 # LOG_RANK=0,1 NGPU=4 ./run_train.sh
 NGPU=4
 export LOG_RANK=${LOG_RANK:-0}
-CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/deepseek_v3/train_configs/deepseek_v3_16b.toml"}
+CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/llama3/train_configs/debug_model.toml"}
+TRAIN_FILE=${TRAIN_FILE:-"torchtitan.train"}
 
 # TORCHFT_LIGHTHOUSE=${TORCHFT_LIGHTHOUSE:-"http://localhost:29510"}
 
 export NCCL_DEBUG=INFO
 export NCCL_DEBUG_SUBSYS=INIT,NET,COLL
 
-PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True" \
+PYTORCH_ALLOC_CONF="expandable_segments:True" \
 TORCHFT_LIGHTHOUSE=${TORCHFT_LIGHTHOUSE} \
 torchrun --nproc_per_node=${NGPU} \
 --local-ranks-filter ${LOG_RANK} --role rank --tee 3 \
--m torchtitan.train --job.config_file ${CONFIG_FILE} "$@"
+-m ${TRAIN_FILE} --job.config_file ${CONFIG_FILE} "$@"
