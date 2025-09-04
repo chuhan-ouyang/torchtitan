@@ -53,6 +53,8 @@ srun \
   --cpus-per-task=16 \
   --kill-on-bad-exit=1 \
   --export=ALL \
+  --output=1node.log \
+  --error=1node_err.log \
   torchrun --nnodes 4 --nproc_per_node 4 --rdzv_backend c10d --rdzv_endpoint "$head_node_ip:29510"\
   -m torchtitan.train --job.config_file ${CONFIG_FILE} "$@" \
 
