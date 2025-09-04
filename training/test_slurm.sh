@@ -26,30 +26,16 @@ export PYTHONFAULTHANDLER=1
 export NCCL_DEBUG=INFO
 export NCCL_DEBUG_SUBSYS=INIT,NET,COLL
 
-export NCCL_PROTO=Simple
-export NCCL_ALGO=Ring
-export NCCL_MIN_NCHANNELS=4
-export NCCL_MAX_NCHANNELS=4
-
-export NCCL_SOCKET_IFNAME=hsn,lo
-export NCCL_IB_DISABLE=1
-export NCCL_NET_GDR_LEVEL=0
-export NCCL_SHM_DISABLE=1
+# export NCCL_PROTO=Simple
+# export NCCL_ALGO=Ring
 
 export CUDA_VISIBLE_DEVICES=0,1,2,3 
 
-export NCCL_P2P_DISABLE=1
-export NCCL_IB_DISABLE=1
-export NCCL_BUFFSIZE=1048576
-
-# TORCH_LOGS=+pp
-# TORCH_DISTRIBUTED_DEBUG=DETAIL
-
-#CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/deepseek_v3/train_configs/deepseek_v3_16b.toml"}
+# export NCCL_P2P_DISABLE=1
+# export NCCL_IB_DISABLE=1
+# export NCCL_BUFFSIZE=1048576
 
 CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/deepseek_v3/train_configs/deepseek_v3_16b.toml"}
-# CONFIG_FILE=${CONFIG_FILE:-"./torchtitan/models/deepseek_v3/train_configs/debug_model.toml"}
-
 
 # From run_train.sh
 # TORCHFT_LIGHTHOUSE=${TORCHFT_LIGHTHOUSE:-"http://localhost:29510"}
@@ -61,13 +47,13 @@ dcgmi profile --pause
 srun \
   --job-name=torchtitan_multi_node \
   --partition=train \
-  --nodes=1 \
+  --nodes=4 \
   --ntasks-per-node=1 \
   --gpus-per-task=4 \
   --cpus-per-task=16 \
   --kill-on-bad-exit=1 \
   --export=ALL \
-  torchrun --nnodes 1 --nproc_per_node 4 --rdzv_backend c10d --rdzv_endpoint "$head_node_ip:29510"\
+  torchrun --nnodes 4 --nproc_per_node 4 --rdzv_backend c10d --rdzv_endpoint "$head_node_ip:29510"\
   -m torchtitan.train --job.config_file ${CONFIG_FILE} "$@" \
 
 dcgmi profile --resume
