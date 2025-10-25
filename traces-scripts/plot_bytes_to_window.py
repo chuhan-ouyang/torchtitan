@@ -3,6 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 def main():
+    plt.rcParams['pdf.fonttype'] = 42
+    plt.rcParams['ps.fonttype'] = 42
     parser = argparse.ArgumentParser(description="Plot window count and average duration per kernel_after_bytes.")
     parser.add_argument("tsv_path", type=str, help="Path to input TSV file")
     args = parser.parse_args()
@@ -59,7 +61,7 @@ def main():
     fig.tight_layout()
     fig.subplots_adjust(top=0.88)
 
-    output_path = args.tsv_path.replace(".tsv", "_count_duration_plot.pdf")
+    output_path = args.tsv_path.replace(".tsv", "_count_duration_plot_new.pdf")
     plt.savefig(output_path)
     print(f"Plot saved to {output_path}")
 

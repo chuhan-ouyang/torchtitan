@@ -9,6 +9,8 @@ from matplotlib.ticker import FuncFormatter
 
 def main():
     plt.rcParams.update({'font.size': 14})
+    plt.rcParams['pdf.fonttype'] = 42
+    plt.rcParams['ps.fonttype'] = 42
     parser = argparse.ArgumentParser(
         description="Plot TorchTitan Application Iteration Time vs Network Reconfiguration Delay"
     )
@@ -31,6 +33,13 @@ def main():
     mask_means   = [mask.loc[d, "avg_iteration_time_ms"] / 1000 for d in delays]
     mask_stds    = [mask.loc[d, "std_dev_ms"]  / 1000       for d in delays]
 
+    # Normalize values by the first baseline mean
+    norm_factor = base_means[0]
+    base_means = [m / norm_factor for m in base_means]
+    base_stds = [s / norm_factor for s in base_stds]
+    mask_means = [m / norm_factor for m in mask_means]
+    mask_stds = [s / norm_factor for s in mask_stds]
+
     # X positions
     x = np.arange(len(delays))
     width = 0.35
@@ -40,42 +49,45 @@ def main():
         x - width/2,
         base_means,
         width,
-        yerr=base_stds,
-        capsize=3,
         label="Without provisioning",
+        color=plt.cm.tab10(0),  # Native blue
     )
     ax.bar(
         x + width/2,
         mask_means,
         width,
-        yerr=mask_stds,
-        capsize=3,
         label="With provisioning",
+        color=plt.cm.tab10(1),  # Native orange
     )
-    # Calculate base_mean/mask_mean ratios
-    ratios = [base_means[i] / mask_means[i] for i in range(len(delays))]
-
-    # Add text annotations on the bars
-    for i, ratio in enumerate(ratios):
+    # Add rotated text annotations on the bars
+    for i, ratio in enumerate(base_means):
         ax.text(
-            x[i] + width/2 + 0.2, mask_means[i] + mask_stds[i] + 0.4,
-            f"x{ratio:.2f}", ha="center", va="bottom", fontsize=10, color="black", rotation=45
+            x[i] - width/2, base_means[i] + base_stds[i] + 0.01,
+            f"{base_means[i]:.2f}", ha="center", va="bottom", fontsize=10, color=plt.cm.tab10(0), rotation=45
+        )
+    for i, ratio in enumerate(mask_means):
+        ax.text(
+            x[i] + width/2, mask_means[i] + mask_stds[i] + 0.01,
+            f"{mask_means[i]:.2f}", ha="center", va="bottom", fontsize=10, color=plt.cm.tab10(1), rotation=45
         )
 
     ax.set_xlabel("Reconfig. latency (ms)")
-    # ax.set_yscale('log')
-    ax.set_ylim(10, 21)
-    ax.set_ylabel("Avg iter. time (s)")
+    ax.set_xticks(np.arange(len(delays)))
+    ax.set_xticklabels(
+        ["0", "0.1", "1.0", "5.0", "10.0", "20.0", "50.0", "100", "200", "500", "1000"],
+        fontsize=12
+    )
+    ax.set_ylabel("Normalized iter. time")
+    ax.set_ylim(0.9, 1.8)
     ax.set_xticks(x)
-    ax.set_xticklabels([str(d) if d > 0 else "0" for d in delays], rotation=45, fontsize=10)
-    
     ax.legend()
     ax.grid(True, axis="y", linestyle="--", alpha=0.5)
+    fig.set_size_inches(7, 3)  # Increase the width of the figure
     fig.tight_layout()
 
     # Save next to input CSV
     out_dir = os.path.dirname(args.csv_path) or "."
-    out_path = os.path.join(out_dir, "iteration_time_vs_reconfig_delay.pdf")
+    out_path = os.path.join(out_dir, "iteration_time_vs_reconfig_delay_normalized.pdf")
     fig.savefig(out_path)
     print(f"Plot saved to {out_path}")
 

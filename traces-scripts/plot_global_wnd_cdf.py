@@ -21,6 +21,9 @@ def main():
     plt.figure(figsize=(4, 3))
     plt.rcParams.update({'font.size': 14})
 
+    plt.rcParams['pdf.fonttype'] = 42
+    plt.rcParams['ps.fonttype'] = 42
+
     # Plot each rail's CDF
     for idx, path in enumerate(args.tsv_paths, start=1):
         df = pd.read_csv(path, sep="\t")
@@ -46,7 +49,7 @@ def main():
 
     # Save to 'rails_cdf.png' in the same directory as the first TSV
     out_dir = os.path.dirname(args.tsv_paths[0]) or "."
-    out_path = os.path.join(out_dir, "rails_cdf.pdf")
+    out_path = os.path.join(out_dir, "rails_cdf_new.pdf")
     plt.savefig(out_path)
     print(f"CDF plot saved to {out_path}")
 
